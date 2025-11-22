@@ -1,561 +1,838 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WanderScript v.1.1 (Auto-Fix)</title>
+    <title>PrecisionFlow | Cinematic Video Architect</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-dark: #050505;
+            --bg-panel: #0F0F0F;
+            --accent-gold: #D4AF37;
+            --accent-gold-dim: #8a701e;
+            --text-main: #EAEAEA;
+            --text-muted: #888888;
+        }
         html { scroll-behavior: smooth; }
         body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: #0B1120; 
-            background-image: radial-gradient(rgba(34, 211, 238, 0.1) 1px, transparent 1px), radial-gradient(rgba(34, 211, 238, 0.1) 1px, #0B1120 1px);
-            background-size: 40px 40px;
-            background-position: 0 0, 20px 20px;
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
-        .btn { transition: all 0.2s ease-in-out; }
-        .btn:active:not(:disabled) { transform: scale(0.95); }
-        .btn-primary { background: linear-gradient(45deg, #22D3EE, #0891B2); color: white; box-shadow: 0 4px 15px rgba(34, 211, 238, 0.2); }
-        .btn-primary:hover:not(:disabled) { background: linear-gradient(45deg, #0891B2, #0e7490); box-shadow: 0 6px 20px rgba(34, 211, 238, 0.3); }
-        .btn-success { background-color: #16A34A; color: white; }
-        .btn-success:hover:not(:disabled) { background-color: #15803D; }
-        .btn-secondary { background-color: #374151; color: white; }
-        .btn-secondary:hover:not(:disabled) { background-color: #4B5563; }
-        .btn-ai { background: linear-gradient(45deg, #0891B2, #0d9488); color: white; }
-        .btn-ai:hover:not(:disabled) { background: linear-gradient(45deg, #06b6d4, #0f766e); }
-        .btn-prompt-canva { background-color: #0891b2; color: white; }
-        .btn-prompt-canva:hover:not(:disabled) { background-color: #0e7490; }
-        .btn-copy { background-color: #4B5563; color: #D1D5DB; }
-        .btn-copy:hover:not(:disabled) { background-color: #6B7280; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .loader, .inline-loader {
-            border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #22D3EE;
-            border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Components */
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
-        .inline-loader {
-            width: 20px; height: 20px; border-width: 2px;
-            border-top-color: white; border-left-color: white; border-right-color: white; border-bottom-color: transparent;
+        
+        .btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); text-transform: uppercase; letter-spacing: 0.05em; }
+        .btn:active:not(:disabled) { transform: scale(0.98); }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--accent-gold), #B8860B); 
+            color: #000; font-weight: 700; 
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+            border: 1px solid var(--accent-gold);
+        }
+        .btn-primary:hover:not(:disabled) { 
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); 
+            filter: brightness(1.1);
+        }
+        
+        .btn-secondary { background: #1A1A1A; border: 1px solid #333; color: #FFF; }
+        .btn-secondary:hover:not(:disabled) { background: #252525; border-color: #555; }
+        
+        .btn-accent { background: rgba(212, 175, 55, 0.1); border: 1px solid var(--accent-gold-dim); color: var(--accent-gold); }
+        .btn-accent:hover:not(:disabled) { background: rgba(212, 175, 55, 0.2); }
+
+        .input-field {
+            background: #0A0A0A;
+            border: 1px solid #333;
+            color: #FFF;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 1px var(--accent-gold-dim);
+        }
+
+        /* Loading Animation */
+        .loader {
+            border: 3px solid rgba(212, 175, 55, 0.1);
+            border-top: 3px solid var(--accent-gold);
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .tab-btn { border-bottom: 2px solid transparent; }
-        .tab-btn.active { border-bottom-color: #22D3EE; color: #67e8f9; }
-        .prompt-output { 
-            font-family: 'Roboto Mono', monospace;
-            background-color: #111827; 
-            border: 1px solid #374151; 
-            white-space: pre-wrap; 
-            word-wrap: break-word; 
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #e5e7eb;
+
+        /* Typography utilities */
+        .text-gold { color: var(--accent-gold); }
+
+        /* Custom Modal */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none; place-items: center; z-index: 50;
+            opacity: 0; transition: opacity 0.2s;
         }
-        .glass-card {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 1rem;
-            border: 1px solid rgba(55, 65, 81, 0.5);
+        .modal-overlay.visible { display: grid; opacity: 1; }
+        .modal-content {
+            background: #111; border: 1px solid #333;
+            transform: scale(0.95); transition: transform 0.2s;
         }
-        .custom-modal-overlay {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(10, 10, 10, 0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            pointer-events: none;
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+
+        .tab-btn.active {
+            border-bottom: 2px solid var(--accent-gold);
+            color: var(--accent-gold);
         }
-        .custom-modal-overlay.visible { display: flex; opacity: 1; pointer-events: auto; }
-        .custom-modal-content {
-            background-color: #1f2937;
-            border-radius: 1rem;
-            padding: 2rem;
-            max-width: 90%;
-            width: 500px;
-            border: 1px solid #374151;
-        }
-        .action-dna-tag { cursor: pointer; transition: all 0.2s ease; }
-        .action-dna-tag.selected { background-color: #0891B2; color: white; border-color: #0e7490; }
-        .suggestion-list { list-style: none; padding-left: 0; }
-        .suggestion-list li { display: flex; align-items: flex-start; gap: 0.5rem; }
-        .futuristic-text-glow { text-shadow: 0 0 8px rgba(34, 211, 238, 0.5); }
     </style>
 </head>
-<body class="text-gray-200 antialiased">
+<body class="antialiased min-h-screen flex flex-col">
 
-    <div id="app-wrapper" class="fade-in">
-        <header class="text-center py-4 px-4 md:px-8 sticky top-0 z-30">
-            <div class="max-w-7xl mx-auto flex justify-between items-center glass-card p-3">
+    <div id="password-overlay" class="fixed inset-0 bg-black z-[60] flex items-center justify-center">
+        <div class="glass-panel p-8 rounded-xl text-center w-full max-w-sm border border-gray-800">
+            <div class="mb-6">
+                <svg class="w-12 h-12 mx-auto text-gold mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                <h2 class="text-2xl font-bold text-white tracking-tight">PrecisionFlow</h2>
+                <p class="text-gray-500 text-sm mt-1">Enter Secure Access Code</p>
+            </div>
+            <form id="password-form" class="space-y-4">
+                <input type="password" id="password-input" placeholder="Enter Code" class="input-field w-full rounded-lg p-3 text-center tracking-widest">
+                <button type="submit" id="unlock-btn" class="btn btn-primary w-full py-3 rounded-lg flex justify-center items-center gap-2">
+                    <span>Unlock System</span>
+                    <div id="auth-loader" class="loader w-4 h-4 hidden"></div>
+                </button>
+            </form>
+            <p id="password-error" class="text-red-500 text-xs mt-4 hidden">Access Denied. Invalid Credentials.</p>
+        </div>
+    </div>
+
+    <div id="app-wrapper" style="display: none;" class="flex-grow flex flex-col">
+        
+        <header class="glass-panel sticky top-0 z-40 border-b border-white/5">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <img src="https://placehold.co/96x96/0891B2/FFFFFF?text=WS&font=poppins" alt="Logo" class="h-10 w-10 rounded-full">
-                    <h1 class="text-xl md:text-2xl font-extrabold tracking-tight">
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-sky-400 futuristic-text-glow">WanderScript v.1.1</span>
-                    </h1>
+                    <div class="w-8 h-8 bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-sm flex items-center justify-center">
+                        <span class="font-bold text-black text-lg">P</span>
+                    </div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">Precision<span class="text-gold">Flow</span></h1>
                 </div>
-                <div class="flex items-center gap-2 md:gap-3">
-                    <button id="importProjectBtn" class="btn btn-secondary font-semibold py-2 px-4 rounded-lg text-sm">Impor JSON</button>
-                    <button id="exportProjectBtn" class="btn btn-secondary font-semibold py-2 px-4 rounded-lg text-sm">Ekspor ke JSON</button>
-                    <button id="resetProjectBtn" class="btn btn-primary font-semibold py-2 px-4 rounded-lg text-sm">PROYEK BARU</button>
-                    <button id="openSettingsBtn" class="btn btn-secondary p-2 rounded-lg">⚙️</button>
+                <div class="flex items-center gap-3">
+                    <button id="importProjectBtn" class="btn btn-secondary text-xs px-3 py-2 rounded hidden md:block">Import JSON</button>
+                    <button id="exportProjectBtn" class="btn btn-secondary text-xs px-3 py-2 rounded hidden md:block">Export JSON</button>
+                    <button id="openSettingsBtn" class="btn btn-secondary p-2 rounded text-gray-400 hover:text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </button>
                 </div>
             </div>
         </header>
 
-        <div class="flex flex-col md:flex-row max-w-7xl mx-auto gap-6 p-4 md:p-6">
-            <aside class="w-full md:w-1/3 lg:w-1/4 space-y-6 flex-shrink-0">
-                <div id="characterSection" class="glass-card">
-                    <div class="p-4"><h2 class="text-xl font-bold">Host / Blogger</h2></div>
-                    <div class="p-4 border-t border-gray-700 space-y-4">
-                        <p class="text-sm text-gray-400">Buat host/blogger yang akan memandu vlog Anda.</p>
-                        <button id="openAddCharModalBtn" class="btn btn-ai font-semibold py-2 px-4 rounded-lg w-full">Buat Host Baru</button>
-                        <div class="pt-4 mt-4 border-t border-gray-700">
-                            <h3 class="text-sm font-semibold text-gray-400 mb-3 text-center">Host Siap Pakai</h3>
-                            <div id="templateCharList" class="space-y-2"></div>
+        <main class="flex-grow max-w-7xl mx-auto w-full p-4 md:p-6 flex flex-col md:flex-row gap-6">
+            
+            <aside class="w-full md:w-80 flex-shrink-0 space-y-6">
+                
+                <div class="glass-panel rounded-xl p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <svg class="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <h2 class="font-bold text-sm uppercase tracking-widest text-gray-300">Viral Strategy</h2>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1 uppercase">Hook Strategy</label>
+                            <select id="hookStrategy" class="input-field w-full rounded p-2 text-sm">
+                                <option value="question">Provocative Question</option>
+                                <option value="shocking_fact">Shocking Stat (9/10 Fail)</option>
+                                <option value="comparison">Amateur vs Pro</option>
+                                <option value="uniqueness">The "Why You" (Uniqueness)</option>
+                                <option value="value_prop">Direct Value Promise</option>
+                            </select>
                         </div>
-                        <div class="pt-4 mt-4 border-t border-gray-700">
-                             <h3 class="text-sm font-semibold text-gray-400 mb-2">Host Anda:</h3>
-                             <div id="charListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-2"></div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1 uppercase">Target Audience</label>
+                            <select id="targetAudience" class="input-field w-full rounded p-2 text-sm">
+                                <option value="entrepreneurs">Founders & CEOs</option>
+                                <option value="high_performers">Top 1% Achievers</option>
+                                <option value="students">Ambitious Students</option>
+                                <option value="creators">Content Creators</option>
+                            </select>
                         </div>
                     </div>
                 </div>
-                <div id="directingSection" class="glass-card">
-                    <div class="p-4"><h2 class="text-xl font-bold">Arahan Vlog</h2></div>
-                    <div class="p-4 border-t border-gray-700 space-y-4">
-                        <p class="text-sm text-gray-400">Atur nuansa dan lokasi vlog.</p>
-                         <div class="p-3 bg-cyan-900/50 border border-cyan-500/50 rounded-lg text-center">
-                             <p class="font-bold text-cyan-300">Gaya Visual 🎨</p>
-                             <p class="text-xs text-cyan-400">Vlog Perjalanan (Lucu & Informatif).</p>
-                         </div>
-                         <div id="narratorStyleLock" class="p-3 bg-cyan-900/50 border border-cyan-500/50 rounded-lg text-center mt-4">
-                             <p class="font-bold text-cyan-300">Gaya Audio 🎙️</p>
-                             <p id="selectedNarratorStyleText" class="text-xs text-cyan-400"></p>
-                         </div>
+
+                <div class="glass-panel rounded-xl p-5">
+                    <div class="flex items-center gap-2 mb-4">
+                        <svg class="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <h2 class="font-bold text-sm uppercase tracking-widest text-gray-300">Aesthetic Engine</h2>
+                    </div>
+                    <div class="p-3 bg-black/40 border border-white/5 rounded text-center mb-3">
+                        <p class="text-gold font-bold text-xs uppercase mb-1">Mode</p>
+                        <p class="text-sm font-semibold">"Cinematic Precision"</p>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed">
+                        Optimized for high-end video generation (Sora/Veo/Runway). Focuses on photorealism, anamorphic lenses, and dramatic lighting.
+                    </p>
+                </div>
+
+                <div class="glass-panel rounded-xl p-5">
+                     <div class="flex items-center gap-2 mb-4">
+                        <svg class="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                        <h2 class="font-bold text-sm uppercase tracking-widest text-gray-300">Audio Profile</h2>
+                    </div>
+                     <div class="space-y-3">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-300 mb-1">Latar Tempat:</label>
-                            <select id="locationSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm">
-                                <option value="pantai_tropis">Pantai Tropis (Bali, Lombok)</option>
-                                <option value="gunung_megah">Gunung Megah (Bromo)</option>
-                                <option value="kota_metropolitan">Kota Metropolitan (Jakarta)</option>
-                                <option value="desa_tradisional">Desa Tradisional</option>
-                                <option value="situs_sejarah">Situs Sejarah</option>
-                                <option value="pasar_lokal">Pasar Lokal / Kuliner</option>
-                                <option value="hutan_hujan">Hutan Hujan</option>
-                                <option value="spot_foto_unik">Spot Foto Unik</option>
-                                <option value="custom_location">Custom...</option>
-                            </select>
-                            <input type="text" id="customLocationInput" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm mt-2 hidden" placeholder="Lokasi kustom...">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-300 mb-1">Kamera:</label>
-                            <select id="cameraStyleSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm">
-                                <option value="standard_cinematic">Sinematik Standar</option>
-                                <option value="fpv_drone_dive">Drone FPV</option>
-                                <option value="ground_level_action_cam">Kamera Aksi</option>
-                                <option value="satellite_zoom">Zoom Satelit</option>
-                                <option value="dolly_zoom_vertigo">Dolly Zoom</option>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Voice Persona</label>
+                            <select id="narratorVoice" class="input-field w-full rounded p-2 text-sm">
+                                <option value="deep_male">Deep Male (Authority/Stoic)</option>
+                                <option value="crisp_female">Crisp Female (Professional)</option>
+                                <option value="soft_whisper">Soft Whisper (ASMR/Intimate)</option>
+                                <option value="fast_paced">Fast Paced (High Energy)</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-300 mb-1">Bahasa:</label>
-                            <select id="narratorLanguageSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm">
-                                <option value="no_narrator">Tanpa Narator</option>
+                         <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Language</label>
+                            <select id="narratorLang" class="input-field w-full rounded p-2 text-sm">
+                                <option value="English">English (US/UK)</option>
                                 <option value="Indonesian">Bahasa Indonesia</option>
-                                <option value="English">English</option>
-                                <option value="Javanese">Bahasa Jawa</option>
-                                <option value="custom_language">Lainnya...</option>
-                            </select>
-                            <input type="text" id="customNarratorLanguageInput" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm mt-2 hidden" placeholder="Bahasa...">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-300 mb-1">Suara:</label>
-                            <select id="narratorVoiceSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm">
-                                <option value="dialog_murni">Hanya Dialog</option>
-                                <option value="pria_dewasa_ramah">Pria Dewasa (Ramah)</option>
-                                <option value="wanita_dewasa_lembut">Wanita Dewasa (Lembut)</option>
-                                <option value="anak_laki_laki_ceria">Anak Laki-laki (Ceria)</option>
-                                <option value="anak_perempuan_semangat">Anak Perempuan (Semangat)</option>
-                                <option value="narator_dokumenter_berwibawa">Narator Dokumenter</option>
-                                <option value="suara_robot_informatif">Suara Robot</option>
+                                <option value="Spanish">Spanish</option>
                             </select>
                         </div>
-                    </div>
+                     </div>
                 </div>
+
             </aside>
 
-            <main class="w-full md:w-2/3 lg:w-3/4 glass-card">
-                <div id="tabsContainer" class="border-b border-gray-700 flex">
-                    <button id="tabNaskah" class="tab-btn active font-semibold py-3 px-5">Naskah</button>
-                    <button id="tabStoryboard" class="tab-btn font-semibold py-3 px-5">Storyboard</button>
+            <section class="flex-grow glass-panel rounded-xl overflow-hidden flex flex-col">
+                
+                <div class="flex border-b border-white/10 bg-black/20">
+                    <button id="tabScript" class="tab-btn active flex-1 py-4 text-sm font-bold uppercase tracking-wider text-gray-400 hover:bg-white/5 transition">1. Topic & Script</button>
+                    <button id="tabStoryboard" class="tab-btn flex-1 py-4 text-sm font-bold uppercase tracking-wider text-gray-400 hover:bg-white/5 transition">2. Visual & Prompts</button>
                 </div>
 
-                <div id="naskahView" class="p-6 space-y-6">
-                    <div>
-                        <label class="block mb-2 font-semibold text-gray-300">Judul / Topik:</label>
-                        <div class="flex items-center gap-2">
-                            <input id="projectTitleInput" type="text" placeholder="Contoh: 3 Hari di Jogja" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3">
-                            <button id="generateScriptBtn" class="btn btn-ai font-semibold py-3 px-4 rounded-lg text-sm hidden flex items-center gap-2">
-                                <span id="generateScriptBtnText">Buat Naskah</span>
-                                <div id="scriptLoader" class="inline-loader hidden"></div>
+                <div id="viewScript" class="p-6 space-y-6 fade-in">
+                    <div class="text-center max-w-2xl mx-auto py-4">
+                        <h2 class="text-2xl font-bold text-white mb-2">What is the Core Concept?</h2>
+                        <p class="text-gray-500 text-sm">The AI will apply "The Precision Protocol" formula to your topic automatically.</p>
+                    </div>
+
+                    <div class="max-w-3xl mx-auto w-full space-y-4">
+                        <div class="relative">
+                            <input id="topicInput" type="text" placeholder="e.g., Morning Routine for CEO, Focus Hacks, Deep Work..." class="input-field w-full p-4 text-lg rounded-lg border-gray-700 focus:border-gold pl-4">
+                            <button id="generateScriptBtn" class="absolute right-2 top-2 bottom-2 btn btn-primary px-6 rounded-md flex items-center gap-2">
+                                <span>Generate Protocol</span>
+                                <div id="scriptLoader" class="loader hidden"></div>
                             </button>
                         </div>
                     </div>
-                    <div>
-                        <label class="block mb-2 font-semibold text-gray-300">Naskah Cerita:</label>
-                        <textarea id="scenarioInput" rows="10" placeholder="Tulis naskah Anda di sini..." class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3"></textarea>
-                    </div>
-                     <div>
-                        <label class="block mb-2 text-sm font-semibold text-gray-300">Jumlah Segmen:</label>
-                        <div class="flex items-center gap-2">
-                            <input type="number" id="sceneCount" min="1" max="20" value="3" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm">
-                            <button id="analyzeTextBtn" class="btn btn-ai font-semibold py-2 px-4 rounded-lg text-sm">Analisis Teks</button>
+
+                    <div class="mt-8">
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="text-xs font-bold text-gold uppercase tracking-widest">Generated Viral Script</label>
+                            <div class="text-xs text-gray-500">Editable • AI Optimized</div>
                         </div>
-                   </div>
-                    <div class="border-t border-gray-700 pt-6 text-center">
-                        <button id="generateBtn" class="btn btn-primary font-bold py-4 px-10 text-xl rounded-xl shadow-lg w-full" disabled>Buat Papan Cerita!</button>
+                        <textarea id="scriptEditor" class="input-field w-full h-96 rounded-lg p-6 font-mono text-sm leading-relaxed text-gray-300 resize-none" placeholder="Script will appear here..."></textarea>
+                        <div class="mt-4 flex justify-end">
+                            <button id="toStoryboardBtn" class="btn btn-secondary px-8 py-3 rounded-lg font-bold border-white/20 hover:border-gold hover:text-gold transition" disabled>
+                                Proceed to Visualization &rarr;
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div id="storyboardView" class="p-6 hidden">
-                    <div id="loader" class="mx-auto loader hidden"></div>
-                    <div id="storyboardOutput" class="space-y-6 hidden"></div>
-                    <div id="results-placeholder" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-20">
-                        <p class="text-xl font-semibold">Hasil Papan Cerita Akan Muncul di Sini</p>
+                <div id="viewStoryboard" class="p-6 hidden flex-col h-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg text-white">Production Board</h3>
+                        <button id="regenerateVisualsBtn" class="btn btn-accent px-4 py-2 rounded text-xs font-bold flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Refresh Visuals
+                        </button>
+                    </div>
+
+                    <div id="storyboardLoader" class="hidden flex flex-col items-center justify-center py-20">
+                        <div class="loader w-12 h-12 mb-4"></div>
+                        <p class="text-gold font-mono text-sm animate-pulse">Architecting Visuals & Prompts...</p>
+                    </div>
+
+                    <div id="storyboardGrid" class="grid grid-cols-1 gap-6 pb-20">
+                        <div class="text-center py-20 text-gray-600">
+                            <svg class="w-16 h-16 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path></svg>
+                            <p>No scenes generated yet.</p>
+                        </div>
                     </div>
                 </div>
-            </main>
-        </div>
+
+            </section>
+        </main>
+
+        <footer class="border-t border-white/5 p-6 text-center">
+            <p class="text-xs text-gray-600 font-mono">PRECISION FLOW v1.2 // ARCHITECT EDITION</p>
+        </footer>
     </div>
-    
-    <div id="characterModal" class="custom-modal-overlay">
-        <div class="custom-modal-content">
-            <h2 id="characterModalTitle" class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 mb-6 text-center futuristic-text-glow">Studio Host</h2>
-            <div id="char-step1" class="flex-grow">
-                 <p class="text-center text-gray-400 mb-4 text-sm">Langkah 1/3: Unggah referensi atau deskripsikan host.</p>
-                 <input type="file" id="charImageInput" class="hidden" accept="image/*">
-                 <div id="charImagePreview" class="w-full p-2 rounded-lg bg-gray-800 mb-4 flex items-center justify-center text-gray-500 min-h-[144px]"><span>Pratinjau Gambar</span></div>
-                 <button id="uploadImageBtn" class="btn btn-secondary font-semibold py-2 px-4 rounded-lg w-full mb-4">Unggah Referensi</button>
-                <textarea id="charIdeaInput" placeholder="Deskripsi host (Contoh: Wanita muda ceria, ransel, topi)" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3" rows="2"></textarea>
-                <button id="developCharBtn" class="btn btn-ai font-semibold py-2 px-6 rounded-lg w-full mt-4 flex items-center justify-center gap-2">
-                    <span id="developCharBtnText">✨ Desain Model</span>
-                    <div id="charLoader" class="inline-loader hidden"></div>
-                </button>
-            </div>
 
-            <div id="char-step2" class="hidden flex-grow overflow-y-auto pr-2">
-                <p class="text-center text-gray-400 mb-4 text-sm">Langkah 2/3: Periksa detail host.</p>
-                <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-sm font-semibold text-gray-300">Nama:</label><input type="text" id="charBrandName" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3"></div>
-                        <div><label class="block text-sm font-semibold text-gray-300">Peran:</label><input type="text" id="charModelName" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3"></div>
-                    </div>
-                    <div><label class="block text-sm font-semibold text-gray-300">ID Konsistensi:</label><input type="text" id="charConsistencyKey" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3"></div>
-                    <div><label class="block text-sm font-semibold text-gray-300">Deskripsi Desain:</label><textarea id="charDesignLanguage" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3" rows="2"></textarea></div>
-                </div>
-            </div>
-
-            <div id="char-step3" class="hidden flex-grow overflow-y-auto pr-2">
-                <p class="text-center text-gray-400 mb-4 text-sm">Langkah 3/3: DNA Aksi.</p>
-                <div><label class="block text-sm font-semibold text-gray-300 mb-2">Saran Aksi:</label><div id="actionDnaSuggestions" class="flex flex-wrap gap-2"></div></div>
-                <div class="mt-4"><label class="block text-sm font-semibold text-gray-300 mb-1">Tambah Kustom:</label><div class="flex gap-2"><input type="text" id="customActionDnaInput" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm"><button id="addCustomDnaBtn" class="btn btn-secondary text-sm font-semibold py-2 px-3 rounded-lg">+</button></div></div>
-                <div class="mt-4"><label class="block text-sm font-semibold text-gray-300 mb-2">Terpilih:</label><div id="selectedActionDna" class="flex flex-wrap gap-2 p-2 bg-gray-800/50 rounded-lg border border-cyan-500/50 min-h-[40px]"></div></div>
-            </div>
-            
-            <div class="flex-shrink-0 pt-4 mt-4 border-t border-gray-700 flex justify-between items-center">
-                 <button id="closeCharModalBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg">Tutup</button>
-                 <div id="char-nav-buttons">
-                     <button id="charPrevBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg hidden">Kembali</button>
-                     <button id="charNextBtn" class="btn btn-primary font-semibold py-2 px-6 rounded-lg hidden">Lanjut</button>
-                     <button id="addCharBtn" class="btn btn-success font-semibold py-2 px-6 rounded-lg hidden">✅ Simpan</button>
-                 </div>
-            </div>
-        </div>
-    </div>
-        
-    <div id="settingsModal" class="custom-modal-overlay">
-        <div class="custom-modal-content">
-            <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 mb-2 text-center">Pengaturan</h2>
-            <div>
-                <label class="block text-sm font-semibold text-gray-300 mb-1">Google AI API Key</label>
-                <input type="password" id="apiKeyInput" placeholder="API Key..." class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3 text-sm">
-                <p class="text-xs text-gray-500 mt-2"><a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-cyan-400 underline">Dapatkan key di sini</a>.</p>
-            </div>
-            <div class="mt-6 flex justify-between items-center pt-4 border-t border-gray-700">
-                <button id="clearApiKeyBtn" class="btn btn-secondary text-sm font-semibold py-2 px-4 rounded-lg">Hapus</button>
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-content rounded-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-white mb-4">System Configuration</h3>
+            <div class="space-y-4">
                 <div>
-                    <button id="closeSettingsModalBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg mr-2">Tutup</button>
-                    <button id="saveApiKeyBtn" class="btn btn-primary font-semibold py-2 px-6 rounded-lg">Simpan</button>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Google Gemini API Key</label>
+                    <input type="password" id="apiKeyInput" class="input-field w-full p-3 rounded text-sm" placeholder="Paste your API key here...">
+                    <p class="text-xs text-gray-600 mt-2">Required for AI generation. Get one at <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-gold hover:underline">Google AI Studio</a>.</p>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button id="saveSettingsBtn" class="btn btn-primary flex-1 py-2 rounded">Save Configuration</button>
+                    <button id="closeSettingsBtn" class="btn btn-secondary py-2 px-4 rounded">Close</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="notificationModal" class="fixed bottom-5 right-5 bg-gradient-to-r from-cyan-500 to-sky-500 text-white py-3 px-5 rounded-lg shadow-2xl hidden fade-in max-w-sm"><p id="notificationText"></p></div>
-
-    <div id="confirmationModal" class="custom-modal-overlay">
-        <div class="custom-modal-content">
-            <h3 id="confirmationTitle" class="text-xl font-bold mb-4">Konfirmasi</h3>
-            <p id="confirmationMessage" class="text-gray-300 mb-6">Yakin?</p>
-            <div class="flex justify-end gap-4"><button id="confirmCancelBtn" class="btn btn-secondary rounded-lg px-4 py-2">Batal</button><button id="confirmOkBtn" class="btn btn-primary rounded-lg px-4 py-2">OK</button></div>
-        </div>
+    <div id="toast" class="fixed bottom-6 right-6 bg-gold text-black px-6 py-3 rounded font-bold shadow-2xl transform translate-y-20 transition-transform duration-300 z-50 flex items-center gap-3 border border-yellow-500">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span id="toastMsg">Notification</span>
     </div>
-    
+
     <input type="file" id="importFileInput" class="hidden" accept=".json">
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // State & Data
-        let characters = []; let storyboardData = []; let userApiKey = '';
-        let currentCharacterModalStep = 1; let isEditingCharacter = false; let editingCharacterIndex = -1;
-        let uploadedImageBase64 = null; let uploadedImageType = null;
-
-        const templateCharacters = [
-            { name: "Rian (Host Petualang)", brandName: "Rian", modelName: "Host Petualang", description: "Pria muda, gaya chibi 3D, topi petualang, kemeja flanel.", consistency_key: "chibi_host_rian_v1", actionDNA: ["Menunjuk", "Takjub", "Berjalan"] },
-            { name: "Sari (Host Kuliner)", brandName: "Sari", modelName: "Host Kuliner", description: "Wanita, gaya chibi 3D, jilbab cerah, celemek.", consistency_key: "chibi_host_sari_v1", actionDNA: ["Mencicipi", "Enak!", "Senyum"] }
-        ];
-
-        const BLOGGER_STYLE_KEYWORDS = { style: "Bright cinematic travel vlog style, cute 3D animated host (chibi style), informative graphic overlays, golden hour lighting, drone shots, 8K", negative: "dull, dark, grainy, shaky, fantasy, scary, ugly, deformed, watermark" };
-        const defaultState = { projectTitle: '', scenario: '', sceneCount: 3, locationSet: 'pantai_tropis', customLocation: '', cameraStyleSet: 'standard_cinematic', narratorVoiceSet: 'pria_dewasa_ramah' };
-        let state = { ...defaultState };
-
-        // Elements
-        const els = {
-            projectTitle: document.getElementById('projectTitleInput'), generateScriptBtn: document.getElementById('generateScriptBtn'), generateScriptBtnText: document.getElementById('generateScriptBtnText'), scriptLoader: document.getElementById('scriptLoader'),
-            charList: document.getElementById('charListContainer'), templateList: document.getElementById('templateCharList'), scenario: document.getElementById('scenarioInput'), sceneCount: document.getElementById('sceneCount'),
-            analyzeBtn: document.getElementById('analyzeTextBtn'), generateBtn: document.getElementById('generateBtn'), storyboardOut: document.getElementById('storyboardOutput'), loader: document.getElementById('loader'), placeholder: document.getElementById('results-placeholder'),
-            locSet: document.getElementById('locationSet'), custLoc: document.getElementById('customLocationInput'), camSet: document.getElementById('cameraStyleSet'), langSet: document.getElementById('narratorLanguageSet'), custLang: document.getElementById('customNarratorLanguageInput'), voiceSet: document.getElementById('narratorVoiceSet'), styleText: document.getElementById('selectedNarratorStyleText'),
-            charModal: document.getElementById('characterModal'), charModalTitle: document.getElementById('characterModalTitle'), openCharModal: document.getElementById('openAddCharModalBtn'),
-            step1: document.getElementById('char-step1'), step2: document.getElementById('char-step2'), step3: document.getElementById('char-step3'),
-            devCharBtn: document.getElementById('developCharBtn'), devCharText: document.getElementById('developCharBtnText'), charLoader: document.getElementById('charLoader'),
-            addCharBtn: document.getElementById('addCharBtn'), closeCharBtn: document.getElementById('closeCharModalBtn'), prevCharBtn: document.getElementById('charPrevBtn'), nextCharBtn: document.getElementById('charNextBtn'),
-            brandName: document.getElementById('charBrandName'), modelName: document.getElementById('charModelName'), consistency: document.getElementById('charConsistencyKey'), design: document.getElementById('charDesignLanguage'),
-            dnaSugg: document.getElementById('actionDnaSuggestions'), custDna: document.getElementById('customActionDnaInput'), addDnaBtn: document.getElementById('addCustomDnaBtn'), selDna: document.getElementById('selectedActionDna'),
-            imgInput: document.getElementById('charImageInput'), uploadBtn: document.getElementById('uploadImageBtn'), imgPrev: document.getElementById('charImagePreview'), ideaInput: document.getElementById('charIdeaInput'),
-            tabNaskah: document.getElementById('tabNaskah'), tabBoard: document.getElementById('tabStoryboard'), viewNaskah: document.getElementById('naskahView'), viewBoard: document.getElementById('storyboardView'),
-            resetBtn: document.getElementById('resetProjectBtn'), confirmModal: document.getElementById('confirmationModal'), confirmTitle: document.getElementById('confirmationTitle'), confirmMsg: document.getElementById('confirmationMessage'), okBtn: document.getElementById('confirmOkBtn'), cancelBtn: document.getElementById('confirmCancelBtn'),
-            settingsBtn: document.getElementById('openSettingsBtn'), settingsModal: document.getElementById('settingsModal'), closeSettings: document.getElementById('closeSettingsModalBtn'), apiKey: document.getElementById('apiKeyInput'), saveKey: document.getElementById('saveApiKeyBtn'), clearKey: document.getElementById('clearApiKeyBtn'),
-            exportBtn: document.getElementById('exportProjectBtn'), importBtn: document.getElementById('importProjectBtn'), importInput: document.getElementById('importFileInput')
-        };
-
-        // --- ROBUST API FUNCTION (AUTO-FALLBACK) ---
-        const callGeminiAPI = async (prompt, schema = null, initialModel = 'gemini-1.5-flash', imageBase64 = null, imageType = null) => {
-            const apiKey = userApiKey || "";
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIG & SECURITY ---
+            // PASSWORD: "SUKSES2025"
+            const TARGET_PASSWORD = "SUKSES2025"; 
             
-            // Daftar model untuk dicoba secara berurutan jika gagal
-            const modelFallbackList = [
-                'gemini-1.5-flash',
-                'gemini-1.5-flash-001',
-                'gemini-1.5-flash-latest',
-                'gemini-1.5-pro',
-                'gemini-1.5-pro-001',
-                'gemini-pro'
-            ];
+            let state = {
+                topic: "",
+                script: "",
+                hookStrategy: "question",
+                targetAudience: "high_performers",
+                voice: "deep_male",
+                language: "English",
+                scenes: []
+            };
+            let apiKey = localStorage.getItem('pf_api_key') || "";
 
-            // Pastikan model awal ada di urutan pertama
-            let modelsToTry = [initialModel, ...modelFallbackList.filter(m => m !== initialModel)];
+            // --- DOM ELEMENTS ---
+            const els = {
+                passwordOverlay: document.getElementById('password-overlay'),
+                passwordInput: document.getElementById('password-input'),
+                passwordForm: document.getElementById('password-form'),
+                authLoader: document.getElementById('auth-loader'),
+                unlockBtn: document.getElementById('unlock-btn'),
+                appWrapper: document.getElementById('app-wrapper'),
+                apiKeyInput: document.getElementById('apiKeyInput'),
+                topicInput: document.getElementById('topicInput'),
+                scriptEditor: document.getElementById('scriptEditor'),
+                generateScriptBtn: document.getElementById('generateScriptBtn'),
+                scriptLoader: document.getElementById('scriptLoader'),
+                toStoryboardBtn: document.getElementById('toStoryboardBtn'),
+                storyboardGrid: document.getElementById('storyboardGrid'),
+                storyboardLoader: document.getElementById('storyboardLoader'),
+                regenerateVisualsBtn: document.getElementById('regenerateVisualsBtn'),
+                toast: document.getElementById('toast'),
+                toastMsg: document.getElementById('toastMsg'),
+                // Selectors
+                hookStrategy: document.getElementById('hookStrategy'),
+                targetAudience: document.getElementById('targetAudience'),
+                narratorVoice: document.getElementById('narratorVoice'),
+                narratorLang: document.getElementById('narratorLang'),
+                // Tabs
+                tabScript: document.getElementById('tabScript'),
+                tabStoryboard: document.getElementById('tabStoryboard'),
+                viewScript: document.getElementById('viewScript'),
+                viewStoryboard: document.getElementById('viewStoryboard'),
+                // Modals
+                settingsModal: document.getElementById('settingsModal'),
+                openSettingsBtn: document.getElementById('openSettingsBtn'),
+                closeSettingsBtn: document.getElementById('closeSettingsBtn'),
+                saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+                // IO
+                exportBtn: document.getElementById('exportProjectBtn'),
+                importBtn: document.getElementById('importProjectBtn'),
+                importInput: document.getElementById('importFileInput')
+            };
+
+            // --- CRYPTO UTILS (NATIVE SECURE) ---
+            // Removed SHA256 function to simplify login process
+
+            // --- AUTHENTICATION LOGIC ---
+            if(sessionStorage.getItem('pf_auth') === 'true') {
+                els.passwordOverlay.style.display = 'none';
+                els.appWrapper.style.display = 'flex';
+            }
+
+            els.passwordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const input = els.passwordInput.value.trim(); // Added trim() to remove accidental spaces
+                
+                // UI Loading state
+                els.authLoader.classList.remove('hidden');
+                els.unlockBtn.setAttribute('disabled', 'true');
+
+                // Simple direct comparison for reliability
+                // Simulate a small network delay for effect
+                await new Promise(r => setTimeout(r, 600));
+                
+                if(input === TARGET_PASSWORD) {
+                    sessionStorage.setItem('pf_auth', 'true');
+                    els.passwordOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        els.passwordOverlay.style.display = 'none';
+                        els.appWrapper.style.display = 'flex';
+                    }, 500);
+                } else {
+                    document.getElementById('password-error').classList.remove('hidden');
+                    els.authLoader.classList.add('hidden');
+                    els.unlockBtn.removeAttribute('disabled');
+                    els.passwordInput.value = '';
+                    els.passwordInput.focus();
+                }
+            });
+
+            // --- SETTINGS ---
+            if(apiKey) els.apiKeyInput.value = apiKey;
             
-            let lastError = null;
+            els.openSettingsBtn.onclick = () => els.settingsModal.classList.add('visible');
+            els.closeSettingsBtn.onclick = () => els.settingsModal.classList.remove('visible');
+            els.saveSettingsBtn.onclick = () => {
+                apiKey = els.apiKeyInput.value.trim();
+                localStorage.setItem('pf_api_key', apiKey);
+                showToast("System Configuration Saved");
+                els.settingsModal.classList.remove('visible');
+            };
 
-            for (const model of modelsToTry) {
+            // --- TABS ---
+            const switchTab = (view) => {
+                if(view === 'script') {
+                    els.tabScript.classList.add('active'); els.tabStoryboard.classList.remove('active');
+                    els.viewScript.classList.remove('hidden'); els.viewStoryboard.classList.add('hidden'); els.viewStoryboard.classList.remove('flex');
+                } else {
+                    els.tabScript.classList.remove('active'); els.tabStoryboard.classList.add('active');
+                    els.viewScript.classList.add('hidden'); els.viewStoryboard.classList.remove('hidden'); els.viewStoryboard.classList.add('flex');
+                }
+            };
+            els.tabScript.onclick = () => switchTab('script');
+            els.tabStoryboard.onclick = () => switchTab('storyboard');
+            els.toStoryboardBtn.onclick = () => {
+                state.script = els.scriptEditor.value;
+                switchTab('storyboard');
+                if(state.scenes.length === 0) generateVisuals();
+            };
+            els.regenerateVisualsBtn.onclick = () => generateVisuals();
+            // --- API CALLER (GEMINI 2.5 FLASH) ---
+            const callAI = async (prompt, schema = null) => {
+                if(!apiKey) { 
+                    alert("Please enter API Key in Settings first.\n(Click the Gear icon in top right)"); 
+                    return null; 
+                }
+                
+                // UPDATED: Use the supported model for this environment
+                const model = "gemini-2.5-flash-preview-09-2025"; 
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }]
+                };
+                if(schema) {
+                    payload.generationConfig = { responseMimeType: "application/json", responseSchema: schema };
+                }
+
                 try {
-                    // console.log(`Mencoba model: ${model}...`); // Debugging
-                    let apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await response.json();
                     
-                    let parts = [{ text: prompt }];
-                    if (imageBase64 && imageType) parts.unshift({ inlineData: { mimeType: imageType, data: imageBase64 } });
+                    if(data.error) {
+                        console.error("Gemini Error:", data.error);
+                        throw new Error(data.error.message);
+                    }
                     
-                    let payload = { contents: [{ role: "user", parts: parts }] };
-                    if (schema) payload.generationConfig = { responseMimeType: "application/json", responseSchema: schema };
-
-                    let response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    
-                    if (!response.ok) {
-                        const errData = await response.json();
-                        // Jika error 404 (Not Found) atau 400 (Not Supported), lanjut ke model berikutnya
-                        if (response.status === 404 || response.status === 400) {
-                            throw new Error(`Model ${model} not found/supported.`);
-                        }
-                        // Jika error lain (misal API Key salah/Quota), stop dan lempar error
-                        if (response.status === 429) { throw new Error("Rate limit exceeded."); }
-                        throw new Error(errData.error?.message || "API Error");
+                    if(!data.candidates || !data.candidates[0].content) {
+                         throw new Error("No response content generated. API might be overloaded.");
                     }
 
-                    const result = await response.json();
-                    const candidate = result.candidates?.[0];
-                    if (!candidate) throw new Error("No candidates returned.");
-                    if (candidate.finishReason && candidate.finishReason !== 'STOP') throw new Error(`Stopped: ${candidate.finishReason}`);
-                    
-                    const text = candidate.content?.parts?.[0]?.text;
-                    if (!text) throw new Error("Empty response.");
-                    
-                    return text; // Berhasil!
-
-                } catch (error) {
-                    lastError = error;
-                    // Lanjut ke model berikutnya dalam loop
+                    return data.candidates[0].content.parts[0].text;
+                } catch (err) {
+                    console.error(err);
+                    // Return the error message string instead of null so we can show it in the UI
+                    return `ERROR: ${err.message}`;
                 }
-            }
-            
-            // Jika semua model gagal
-            throw new Error(`Semua model gagal. Error terakhir: ${lastError.message}`);
-        };
-        
-        // --- UI Logic ---
-        const notify = (text) => {
-            const m = document.getElementById('notificationModal'); document.getElementById('notificationText').textContent = text;
-            m.classList.remove('hidden'); setTimeout(() => m.classList.add('hidden'), 4000);
-        };
-        const confirmAction = (t, m) => new Promise(res => {
-            els.confirmTitle.textContent = t; els.confirmMsg.textContent = m; els.confirmModal.classList.add('visible');
-            els.okBtn.onclick = () => { els.confirmModal.classList.remove('visible'); res(true); };
-            els.cancelBtn.onclick = () => { els.confirmModal.classList.remove('visible'); res(false); };
+            };
+
+            // --- CORE: GENERATE SCRIPT ---
+            els.generateScriptBtn.onclick = async () => {
+                const topic = els.topicInput.value.trim();
+                if(!topic) return showToast("Please enter a topic");
+
+                state.topic = topic;
+                state.hookStrategy = els.hookStrategy.value;
+                state.targetAudience = els.targetAudience.value;
+
+                els.generateScriptBtn.disabled = true;
+                els.scriptLoader.classList.remove('hidden');
+
+                const prompt = `
+                Act as a viral content strategist for High-Performance channels (US/UK Audience). 
+                Write a 60-second video script (approx 150 words) about: "${topic}".
+                
+                Target Audience: ${state.targetAudience}
+                Hook Strategy: ${state.hookStrategy}
+                Theme: "The Precision Protocol" (Focus on systems, data, 1% improvement, athlete mindset).
+                
+                Structure MUST be:
+                1. **HOOK (0-3s):** Use the selected strategy. Stop the scroll.
+                2. **THE PROBLEM/INSIGHT (3-15s):** Challenge common wisdom. (e.g., "Motivation is a lie").
+                3. **THE PROTOCOL (15-45s):** The core system/solution. Use data-driven language (measure, test, track).
+                4. **THE PAYOFF (45-55s):** Compound growth visualization.
+                5. **CTA (55-60s):** Short engagement prompt (e.g., "Comment 'PROTOCOL'").
+
+                Format the output clearly with section headers (HOOK, BODY, CTA). Do not include visual direction yet, just the spoken script.
+                `;
+
+                const script = await callAI(prompt);
+                if(script && !script.startsWith("ERROR:")) {
+                    els.scriptEditor.value = script;
+                    state.script = script;
+                    els.toStoryboardBtn.disabled = false;
+                    showToast("Protocol Generated");
+                } else {
+                    showToast(script || "Failed to generate script");
+                }
+                
+                els.generateScriptBtn.disabled = false;
+                els.scriptLoader.classList.add('hidden');
+            };
+
+            // --- CORE: GENERATE VISUALS (ENHANCED) ---
+            const generateVisuals = async () => {
+                const script = els.scriptEditor.value;
+                if(!script) return;
+
+                els.storyboardLoader.classList.remove('hidden');
+                els.storyboardGrid.innerHTML = '';
+
+                const prompt = `
+                You are a cinematic director for high-end commercials. 
+                Break down this script into 5-8 visual scenes.
+                
+                SCRIPT:
+                ${script}
+
+                VISUAL STYLE RULES (STRICT):
+                - Style: "Aesthetic Precision", "Cinematic Realism", "Apple/Nike Commercial Style".
+                - Lighting: High contrast, moody, warm practical lights (candles, desk lamps) against dark backgrounds.
+                - Camera: Macro shots, slow pans, static tripod shots. Stable.
+                - NO CARTOONS. Photorealistic descriptions only.
+                
+                Audio Mood: ${els.narratorVoice.value}, Language: ${els.narratorLang.value}.
+
+                Output JSON format:
+                {
+                    "scenes": [
+                        {
+                            "id": 1,
+                            "voiceover": "Segment of script...",
+                            "visual_description": "Detailed visual prompt (subject, action, lighting)...",
+                            "text_overlay": "Short text on screen",
+                            "cinematography": {
+                                "shot_type": "Close-up/Wide/Macro",
+                                "camera_movement": "Slow Pan/Static/Tracking"
+                            },
+                            "sound_design": {
+                                "sfx": "Writing sounds, ambient hum...",
+                                "music_mood": "Deep Focus, Lo-fi, Intensity"
+                            }
+                        }
+                    ]
+                }
+                `;
+
+                const schema = {
+                    type: "OBJECT",
+                    properties: {
+                        scenes: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    id: { type: "NUMBER" },
+                                    voiceover: { type: "STRING" },
+                                    visual_description: { type: "STRING" },
+                                    text_overlay: { type: "STRING" },
+                                    cinematography: {
+                                        type: "OBJECT",
+                                        properties: {
+                                            shot_type: { type: "STRING" },
+                                            camera_movement: { type: "STRING" }
+                                        }
+                                    },
+                                    sound_design: {
+                                        type: "OBJECT",
+                                        properties: {
+                                            sfx: { type: "STRING" },
+                                            music_mood: { type: "STRING" }
+                                        }
+                                    }
+                                },
+                                required: ["id", "voiceover", "visual_description", "text_overlay", "cinematography", "sound_design"]
+                            }
+                        }
+                    },
+                    required: ["scenes"]
+                };
+
+                const jsonStr = await callAI(prompt, schema);
+                if(jsonStr && !jsonStr.startsWith("ERROR:")) {
+                    try {
+                        const data = JSON.parse(jsonStr);
+                        state.scenes = data.scenes;
+                        renderStoryboard();
+                        showToast("Visuals Architected");
+                    } catch (e) {
+                        console.error("JSON Parse Error", e);
+                        showToast("Error parsing AI response");
+                    }
+                } else {
+                    showToast(jsonStr || "Failed to generate visuals");
+                }
+
+                els.storyboardLoader.classList.add('hidden');
+            };
+
+            // --- RENDERER (ENHANCED) ---
+            const renderStoryboard = () => {
+                els.storyboardGrid.innerHTML = '';
+                state.scenes.forEach((scene, idx) => {
+                    const card = document.createElement('div');
+                    card.className = "glass-panel p-5 rounded-xl border border-white/5 hover:border-gold/30 transition fade-in scene-card";
+                    card.dataset.index = idx; 
+                    
+                    // Safety check
+                    const shotType = scene.cinematography?.shot_type || "Standard";
+                    const camMove = scene.cinematography?.camera_movement || "Static";
+                    const sfx = scene.sound_design?.sfx || "Ambient";
+
+                    card.innerHTML = `
+                        <div class="flex flex-col md:flex-row gap-5">
+                            <div class="flex-shrink-0 flex flex-col items-center justify-start w-16">
+                                <div class="w-16 h-16 bg-white/5 rounded font-mono text-gold font-bold text-xl border border-white/10 flex items-center justify-center mb-2">
+                                    <span>${String(idx + 1).padStart(2, '0')}</span>
+                                </div>
+                                <div class="text-[10px] text-gray-500 uppercase tracking-widest text-center">Scene</div>
+                            </div>
+                            
+                            <div class="flex-grow space-y-4">
+                                <div>
+                                    <div class="flex justify-between items-baseline mb-1">
+                                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Visual Core</h4>
+                                        <span class="text-[10px] text-gold border border-gold/30 px-1 rounded">${shotType} • ${camMove}</span>
+                                    </div>
+                                    <p class="text-gray-200 text-sm leading-relaxed bg-black/30 p-3 rounded border border-white/5 font-light">
+                                        ${scene.visual_description}
+                                    </p>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Voiceover</h4>
+                                        <p class="text-white text-sm italic border-l-2 border-gold pl-3">"${scene.voiceover}"</p>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">On-Screen Text</h4>
+                                            <span class="bg-white text-black font-bold px-2 py-1 text-xs uppercase rounded-sm tracking-widest">${scene.text_overlay || "NO TEXT"}</span>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Audio Cues</h4>
+                                            <p class="text-xs text-gray-400 font-mono"><span class="text-gold">SFX:</span> ${sfx}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="detailed-prompt-container mt-4 hidden">
+                                    <div class="border-t border-white/10 pt-4">
+                                        <h5 class="text-xs font-bold text-gold mb-2">AI VIDEO PROMPT (Veo/Sora/Runway)</h5>
+                                        <pre class="prompt-output text-[10px] text-gray-300 bg-black p-3 rounded border border-white/10 whitespace-pre-wrap font-mono select-all"></pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex-shrink-0 flex flex-col gap-2 justify-start border-l border-white/5 pl-5">
+                                <button class="generate-prompt-btn btn btn-primary text-xs py-2 px-3 rounded hover:brightness-110 font-bold w-full">
+                                    Generate Prompt
+                                </button>
+                                <button class="btn btn-secondary text-xs py-2 px-3 rounded hover:text-gold copy-btn w-full" data-text="${scene.visual_description}">Copy Visual</button>
+                                <button class="btn btn-secondary text-xs py-2 px-3 rounded hover:text-gold copy-btn w-full" data-text="${scene.voiceover}">Copy VO</button>
+                            </div>
+                        </div>
+                    `;
+                    els.storyboardGrid.appendChild(card);
+                });
+
+                // Attach copy listeners
+                document.querySelectorAll('.copy-btn').forEach(btn => {
+                    btn.onclick = () => {
+                        navigator.clipboard.writeText(btn.dataset.text);
+                        const originalText = btn.innerText;
+                        btn.innerText = "Copied!";
+                        btn.classList.add('text-gold', 'border-gold');
+                        setTimeout(() => {
+                            btn.innerText = originalText;
+                            btn.classList.remove('text-gold', 'border-gold');
+                        }, 1500);
+                    };
+                });
+
+                // Attach Generate Prompt Listeners
+                document.querySelectorAll('.generate-prompt-btn').forEach(btn => {
+                    btn.onclick = (e) => handleGenerateVideoPrompt(e);
+                });
+            };
+
+            // --- NEW: GENERATE DETAILED VIDEO PROMPT ---
+            const handleGenerateVideoPrompt = async (e) => {
+                const button = e.target;
+                const card = button.closest('.scene-card');
+                const sceneIndex = parseInt(card.dataset.index);
+                const sceneData = state.scenes[sceneIndex];
+                const container = card.querySelector('.detailed-prompt-container');
+                const outputPre = container.querySelector('.prompt-output');
+
+                // UI State
+                const originalText = button.innerText;
+                button.innerText = "Generating...";
+                button.disabled = true;
+                container.classList.remove('hidden');
+                outputPre.innerText = "Architecting prompt structure...";
+
+                // Keywords for PrecisionFlow Style
+                const styleKeywords = "Cinematic, Photorealistic, 8K, High Contrast, Moody, Anamorphic Lens, Depth of Field, Color Graded";
+                const negativeKeywords = "cartoon, illustration, drawing, low quality, blurry, text, watermark, distorted";
+
+                // Constructing the Prompt for Gemini
+                const prompt = `
+                You are a Prompt Engineer for High-End Video AI (Sora/Gen-3).
+                Convert this scene data into a structured technical prompt.
+                
+                SCENE DATA:
+                - Visual: ${sceneData.visual_description}
+                - Shot: ${sceneData.cinematography?.shot_type}, ${sceneData.cinematography?.camera_movement}
+                - Audio: ${sceneData.sound_design?.sfx}
+                - Mood: ${sceneData.sound_design?.music_mood}
+                - Voiceover: "${sceneData.voiceover}"
+                - Voice Style: ${els.narratorVoice.value}
+
+                OUTPUT FORMAT (Strictly follow this structure):
+
+                STYLE: ${styleKeywords}
+                SUBJECT: [Detailed description of the main subject and action]
+                ENVIRONMENT: [Description of background, location, and atmosphere]
+                COMPOSITION: [Shot type, camera angle, and movement details]
+                LIGHTING: [Lighting setup, e.g., Volumetric lighting, Rembrandt lighting, color tones]
+                NEGATIVE_PROMPT: ${negativeKeywords}
+                INSTRUCTION: Narration style is ${els.narratorVoice.value}.
+                NARRATION: "${sceneData.voiceover}"
+                MIXING: Narration volume 100%, Music [Mood: ${sceneData.sound_design?.music_mood}], SFX [${sceneData.sound_design?.sfx}], Subtle.
+                `;
+
+                const result = await callAI(prompt);
+                
+                // Updated logic to handle error messages returned as strings
+                if (result && !result.startsWith("ERROR:")) {
+                    outputPre.innerText = result;
+                } else {
+                    outputPre.innerText = result || "Failed to generate prompt.";
+                    outputPre.classList.add("text-red-400"); // Highlight error
+                }
+
+                button.innerText = originalText;
+                button.disabled = false;
+            };
+
+            // --- UTILS ---
+            const showToast = (msg) => {
+                els.toastMsg.innerText = msg;
+                els.toast.classList.remove('translate-y-20');
+                setTimeout(() => els.toast.classList.add('translate-y-20'), 3000);
+            };
+
+            // --- EXPORT/IMPORT ---
+            els.exportBtn.onclick = () => {
+                // Ensure state topic matches current input before exporting
+                state.topic = els.topicInput.value.trim();
+
+                const blob = new Blob([JSON.stringify(state, null, 2)], {type: "application/json"});
+                
+                // 1. Get the topic, default to "Untitled" if empty
+                let filenameTopic = state.topic || "Untitled";
+                
+                // 2. Sanitize: Remove special chars, replace spaces with underscores
+                filenameTopic = filenameTopic.replace(/[^a-zA-Z0-9 \-_]/g, '').trim().replace(/\s+/g, '_');
+                
+                // 3. Limit length to avoid overly long filenames
+                if(filenameTopic.length > 50) filenameTopic = filenameTopic.substring(0, 50);
+
+                // 4. Construct final filename: PrecisionFlow_[Topic].json
+                const filename = `PrecisionFlow_${filenameTopic}.json`;
+
+                saveAs(blob, filename);
+            };
+
+            els.importBtn.onclick = () => els.importInput.click();
+            els.importInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        state = data;
+                        els.topicInput.value = state.topic || "";
+                        els.scriptEditor.value = state.script || "";
+                        els.hookStrategy.value = state.hookStrategy || "question";
+                        
+                        // FIX: Enable proceed button if script exists
+                        if (state.script && state.script.trim().length > 0) {
+                            els.toStoryboardBtn.disabled = false;
+                        }
+
+                        if(state.scenes.length > 0) renderStoryboard();
+                        showToast("Project Loaded");
+                    } catch(err) { alert("Invalid File"); }
+                };
+                reader.readAsText(file);
+                // Reset value so same file can be selected again if needed
+                els.importInput.value = '';
+            };
+
+            // Animation Helper
+            const style = document.createElement('style');
+            style.innerHTML = `.fade-in { animation: fadeIn 0.5s ease-out forwards; opacity: 0; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }`;
+            document.head.appendChild(style);
         });
-        const updateUI = () => els.generateBtn.disabled = !(state.scenario.trim());
-        
-        const renderChars = () => {
-            els.charList.innerHTML = characters.length ? '' : '<p class="text-gray-500 italic text-sm">Belum ada host.</p>';
-            characters.forEach((c, i) => {
-                els.charList.innerHTML += `<div class="bg-gray-800/50 p-3 rounded-lg flex justify-between fade-in">
-                    <div><p class="font-bold text-cyan-400">${c.name}</p><p class="text-xs text-gray-400">${c.modelName}</p></div>
-                    <div class="flex gap-2"><button onclick="editChar(${i})" class="text-cyan-400">✎</button><button onclick="delChar(${i})" class="text-red-500">🗑</button></div>
-                </div>`;
-            });
-        };
-        window.editChar = (i) => {
-            const c = characters[i]; isEditingCharacter = true; editingCharacterIndex = i;
-            els.charModalTitle.textContent = "Sunting Host"; els.addCharBtn.textContent = "Perbarui";
-            els.brandName.value = c.brandName; els.modelName.value = c.modelName; els.consistency.value = c.consistency_key; els.design.value = c.description;
-            els.selDna.innerHTML = ''; c.actionDNA.forEach(d => addDna(d));
-            els.charModal.classList.add('visible'); switchStep(2);
-        };
-        window.delChar = async (i) => { if(await confirmAction("Hapus?", "Yakin?")) { characters.splice(i,1); renderChars(); } };
-
-        const renderTemplates = () => {
-            els.templateList.innerHTML = '';
-            templateCharacters.forEach((c, i) => {
-                const btn = document.createElement('button'); btn.className = 'btn btn-ai text-xs px-3 py-1 rounded-md'; btn.textContent = 'Tambah';
-                btn.onclick = () => { if(!characters.some(x=>x.name===c.name)) { characters.push({...c}); renderChars(); notify("Ditambahkan!"); } };
-                const div = document.createElement('div'); div.className = 'bg-gray-800/60 p-3 rounded-lg flex justify-between items-center';
-                div.innerHTML = `<div><p class="font-bold text-cyan-400 text-sm">${c.brandName}</p></div>`; div.appendChild(btn);
-                els.templateList.appendChild(div);
-            });
-        };
-
-        const renderBoard = (data) => {
-            els.storyboardOut.innerHTML = '';
-            if(!data || !data.length) { els.placeholder.classList.remove('hidden'); els.storyboardOut.classList.add('hidden'); return; }
-            els.placeholder.classList.add('hidden'); els.storyboardOut.classList.remove('hidden');
-            data.forEach((s, i) => {
-                const div = document.createElement('div'); div.className = 'bg-gray-800/50 border border-gray-700 p-4 rounded-xl fade-in mb-4';
-                div.innerHTML = `
-                <div class="flex gap-4"><div class="bg-gray-700 text-cyan-400 font-bold rounded-lg w-12 h-12 flex items-center justify-center text-xl">${s.scene_number}</div>
-                <div class="w-full"><h4 class="text-lg font-bold text-cyan-400">${s.scene_title}</h4><p class="text-gray-300 text-sm">${s.scene_summary}</p>
-                <div class="mt-2 pt-2 border-t border-gray-700 grid grid-cols-2 gap-2 text-sm">
-                    <div><p class="text-cyan-400 font-semibold">🎥 Visual</p><p class="text-gray-400 italic">${s.cinematography?.shot_type}</p></div>
-                    <div><p class="text-cyan-400 font-semibold">🔊 Audio</p><p class="text-gray-400 italic">${s.sound_design?.narration_script || '-'}</p></div>
-                </div>
-                <div class="mt-3 flex gap-2 flex-wrap">
-                    <button onclick="genPrompt(this, ${i}, 'blueprint')" class="btn btn-secondary text-xs py-1 px-3 rounded">Detail Prompt</button>
-                    <button onclick="genPrompt(this, ${i}, 'canva')" class="btn btn-prompt-canva text-xs py-1 px-3 rounded">Canva Prompt</button>
-                </div><div class="res-container mt-2"></div></div></div>`;
-                els.storyboardOut.appendChild(div);
-            });
-        };
-
-        // --- Logic ---
-        els.generateScriptBtn.onclick = async () => {
-            if(!els.projectTitle.value.trim()) return notify("Isi judul dulu.");
-            els.generateScriptBtn.disabled = true; els.scriptLoader.classList.remove('hidden');
-            try {
-                const prompt = `Buat naskah vlog travel pendek, seru, informatif tentang "${els.projectTitle.value}". 3 paragraf (Pembuka, Isi, Penutup). Bahasa santai.`;
-                const res = await callGeminiAPI(prompt); els.scenario.value = res; state.scenario = res; updateUI(); notify("Naskah siap!");
-                els.sceneCount.value = Math.max(1, Math.ceil(res.split(/\s+/).length / 25));
-            } catch(e) { notify(e.message); } finally { els.generateScriptBtn.disabled = false; els.scriptLoader.classList.add('hidden'); }
-        };
-
-        els.generateBtn.onclick = async () => {
-            els.loader.classList.remove('hidden'); els.storyboardOut.classList.add('hidden'); switchTab(els.tabBoard, els.viewBoard);
-            try {
-                const charCtx = characters.map(c => `${c.name}: ${c.description}`).join('; ');
-                const prompt = `Buat storyboard JSON (${els.sceneCount.value} segmen) dari naskah: "${state.scenario}". 
-                Gaya: Vlog Travel Sinematik, Host Chibi 3D. Host: ${charCtx}. Lokasi: ${els.locSet.value}.
-                Schema: { storyboard: [ { scene_number, scene_title, scene_summary, cinematography: { shot_type }, sound_design: { narration_script } } ] }`;
-                const res = await callGeminiAPI(prompt, { type: "OBJECT", properties: { storyboard: { type: "ARRAY", items: { type: "OBJECT", properties: { scene_number: {type:"NUMBER"}, scene_title: {type:"STRING"}, scene_summary: {type:"STRING"}, cinematography: {type:"OBJECT", properties: {shot_type: {type:"STRING"}}}, sound_design: {type:"OBJECT", properties: {narration_script: {type:"STRING"}}} } } } }, required: ["storyboard"] });
-                storyboardData = JSON.parse(res).storyboard; renderBoard(storyboardData);
-            } catch(e) { els.storyboardOut.innerHTML = `<p class="text-red-400 text-center">Error: ${e.message}</p>`; els.storyboardOut.classList.remove('hidden'); } finally { els.loader.classList.add('hidden'); }
-        };
-
-        window.genPrompt = async (btn, idx, type) => {
-            const container = btn.closest('div').parentElement.querySelector('.res-container');
-            btn.disabled = true; btn.innerText = '...';
-            try {
-                const scn = storyboardData[idx];
-                let p = "";
-                if (type === 'blueprint') p = `Generate detailed video prompt (English) for: ${scn.scene_summary}. Style: ${BLOGGER_STYLE_KEYWORDS.style}. Character info: Consistent ID available.`;
-                else p = `Buat prompt Canva Magic Media (Bahasa Indo) untuk: ${scn.scene_summary}. Gaya: Vlog Travel Chibi 3D.`;
-                const res = await callGeminiAPI(p);
-                container.innerHTML = `<div class="bg-gray-900 p-2 rounded mt-2 border border-gray-700 text-xs font-mono whitespace-pre-wrap">${res}</div>`;
-            } catch(e) { notify(e.message); } finally { btn.disabled = false; btn.innerText = type === 'blueprint' ? 'Detail Prompt' : 'Canva Prompt'; }
-        };
-
-        els.devCharBtn.onclick = async () => {
-            const desc = els.ideaInput.value; if(!desc && !uploadedImageBase64) return notify("Isi deskripsi/gambar.");
-            els.devCharBtn.disabled = true; els.charLoader.classList.remove('hidden');
-            try {
-                const p = `Create JSON character profile for travel vlog host. Input: "${desc}". Style: Cute 3D Chibi. Schema: { brand_name, model_name, design_language, consistency_key }`;
-                const res = await callGeminiAPI(p, { type: "OBJECT", properties: { brand_name: {type:"STRING"}, model_name: {type:"STRING"}, design_language: {type:"STRING"}, consistency_key: {type:"STRING"} } }, 'gemini-1.5-flash', uploadedImageBase64, uploadedImageType);
-                const d = JSON.parse(res); els.brandName.value = d.brand_name; els.modelName.value = d.model_name; els.design.value = d.design_language; els.consistency.value = d.consistency_key; switchStep(2);
-            } catch(e) { notify(e.message); } finally { els.devCharBtn.disabled = false; els.charLoader.classList.add('hidden'); }
-        };
-
-        // Helpers & Inits
-        const switchTab = (t, v) => { [els.tabNaskah, els.tabBoard].forEach(x=>x.classList.remove('active')); [els.viewNaskah, els.viewBoard].forEach(x=>x.classList.add('hidden')); t.classList.add('active'); v.classList.remove('hidden'); };
-        const switchStep = (s) => { 
-            [els.step1, els.step2, els.step3].forEach(x=>x.classList.add('hidden')); 
-            [els.prevCharBtn, els.nextCharBtn, els.addCharBtn].forEach(x=>x.classList.add('hidden'));
-            if(s===1) { els.step1.classList.remove('hidden'); }
-            else if(s===2) { els.step2.classList.remove('hidden'); els.prevCharBtn.classList.remove('hidden'); els.nextCharBtn.classList.remove('hidden'); }
-            else { els.step3.classList.remove('hidden'); els.prevCharBtn.classList.remove('hidden'); els.addCharBtn.classList.remove('hidden'); }
-            currentCharacterModalStep = s;
-        };
-        const addDna = (t) => { const s = document.createElement('span'); s.className = 'action-dna-tag selected bg-cyan-600 text-white px-2 py-1 rounded text-xs m-1'; s.textContent = t; s.onclick = () => s.remove(); els.selDna.appendChild(s); };
-        
-        // Listeners
-        els.uploadBtn.onclick = () => els.imgInput.click();
-        els.imgInput.onchange = (e) => { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { els.imgPrev.innerHTML = `<img src="${ev.target.result}" class="h-full object-contain">`; uploadedImageBase64 = ev.target.result.split(',')[1]; uploadedImageType = f.type; }; r.readAsDataURL(f); };
-        els.addCharBtn.onclick = () => { 
-            if(!els.brandName.value) return notify("Nama wajib.");
-            const c = { name: els.brandName.value, brandName: els.brandName.value, modelName: els.modelName.value, description: els.design.value, consistency_key: els.consistency.value, actionDNA: [] };
-            if(isEditingCharacter) characters[editingCharacterIndex] = c; else characters.push(c);
-            renderChars(); els.charModal.classList.remove('visible');
-        };
-        els.addDnaBtn.onclick = () => { if(els.custDna.value) { addDna(els.custDna.value); els.custDna.value = ''; } };
-        els.openCharModal.onclick = () => { isEditingCharacter = false; els.ideaInput.value = ''; els.imgPrev.innerHTML = 'Preview'; uploadedImageBase64 = null; switchStep(1); els.charModal.classList.add('visible'); };
-        els.closeCharBtn.onclick = () => els.charModal.classList.remove('visible');
-        els.nextCharBtn.onclick = () => switchStep(3); els.prevCharBtn.onclick = () => switchStep(currentCharacterModalStep - 1);
-        
-        els.tabNaskah.onclick = () => switchTab(els.tabNaskah, els.viewNaskah); els.tabBoard.onclick = () => switchTab(els.tabBoard, els.viewBoard);
-        els.analyzeBtn.onclick = () => els.sceneCount.value = Math.max(1, Math.ceil(els.scenario.value.split(/\s+/).length / 25));
-        els.settingsBtn.onclick = () => els.settingsModal.classList.add('visible'); els.closeSettings.onclick = () => els.settingsModal.classList.remove('visible');
-        els.saveKey.onclick = () => { userApiKey = els.apiKey.value; localStorage.setItem('ws_key', userApiKey); notify("Tersimpan"); els.settingsModal.classList.remove('visible'); };
-        els.clearKey.onclick = () => { userApiKey = ''; els.apiKey.value = ''; localStorage.removeItem('ws_key'); notify("Dihapus"); };
-        els.projectTitle.oninput = (e) => { state.projectTitle = e.target.value; els.generateScriptBtn.classList.toggle('hidden', !e.target.value); };
-        els.scenario.oninput = (e) => { state.scenario = e.target.value; updateUI(); };
-        els.resetBtn.onclick = async () => { if(await confirmAction("Reset?", "Semua data hilang.")) { state = {...defaultState}; characters = []; storyboardData = []; renderChars(); renderBoard([]); els.projectTitle.value = ''; els.scenario.value = ''; updateUI(); } };
-
-        // Init
-        userApiKey = localStorage.getItem('ws_key') || ''; els.apiKey.value = userApiKey;
-        renderTemplates(); renderChars(); updateUI();
-    });
     </script>
 </body>
 </html>

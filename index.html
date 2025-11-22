@@ -1,922 +1,873 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WanderScript v.1 - Travel Storyboard</title> <!-- DIUBAH -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
-    <style>
-        html { scroll-behavior: smooth; }
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: #0B1120; /* Deep Navy Blue */
-            background-image: radial-gradient(rgba(34, 211, 238, 0.1) 1px, transparent 1px), radial-gradient(rgba(34, 211, 238, 0.1) 1px, #0B1120 1px);
-            background-size: 40px 40px;
-            background-position: 0 0, 20px 20px;
-        }
-        .btn { transition: all 0.2s ease-in-out; }
-        .btn:active:not(:disabled) { transform: scale(0.95); }
-        .btn-primary { background: linear-gradient(45deg, #22D3EE, #0891B2); color: white; box-shadow: 0 4px 15px rgba(34, 211, 238, 0.2); }
-        .btn-primary:hover:not(:disabled) { background: linear-gradient(45deg, #0891B2, #0e7490); box-shadow: 0 6px 20px rgba(34, 211, 238, 0.3); }
-        .btn-success { background-color: #16A34A; color: white; }
-        .btn-success:hover:not(:disabled) { background-color: #15803D; }
-        .btn-secondary { background-color: #374151; color: white; }
-        .btn-secondary:hover:not(:disabled) { background-color: #4B5563; }
-        .btn-ai { background: linear-gradient(45deg, #0891B2, #0d9488); color: white; }
-        .btn-ai:hover:not(:disabled) { background: linear-gradient(45deg, #06b6d4, #0f766e); }
-        .btn-prompt-canva { background-color: #0891b2; color: white; }
-        .btn-prompt-canva:hover:not(:disabled) { background-color: #0e7490; }
-        .btn-copy { background-color: #4B5563; color: #D1D5DB; }
-        .btn-copy:hover:not(:disabled) { background-color: #6B7280; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .loader, .inline-loader {
-            border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #22D3EE;
-            border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
-        }
-        .inline-loader {
-            width: 20px; height: 20px; border-width: 2px;
-            border-top-color: white; border-left-color: white; border-right-color: white; border-bottom-color: transparent;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .tab-btn { border-bottom: 2px solid transparent; }
-        .tab-btn.active { border-bottom-color: #22D3EE; color: #67e8f9; }
-        .prompt-output { 
-            font-family: 'Roboto Mono', monospace;
-            background-color: #111827; 
-            border: 1px solid #374151; 
-            white-space: pre-wrap; 
-            word-wrap: break-word; 
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #e5e7eb;
-        }
-        .idea-card {
-            background-color: #1f2937;
-            border: 1px solid #374151;
-            transition: all 0.2s ease-in-out;
-            cursor: pointer;
-        }
-        .idea-card:hover {
-            border-color: #0891B2;
-            transform: translateY(-2px);
-        }
-        .idea-card.selected {
-            border-color: #22D3EE;
-            background-color: #374151;
-            box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
-        }
-        .custom-modal-overlay {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(10, 10, 10, 0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            pointer-events: none;
-        }
-        .custom-modal-overlay.visible {
-            display: flex;
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .custom-modal-content {
-            background-color: #1f2937;
-            border-radius: 1rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            padding: 2rem;
-            max-width: 90%;
-            width: 500px;
-            border: 1px solid #374151;
-            transform: scale(0.95);
-            transition: transform 0.3s ease-in-out;
-        }
-        .custom-modal-overlay.visible .custom-modal-content {
-            transform: scale(1);
-        }
-        .action-dna-tag {
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .action-dna-tag.selected {
-            background-color: #0891B2;
-            color: white;
-            border-color: #0e7490;
-        }
-        .glass-card {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 1rem;
-            border: 1px solid rgba(55, 65, 81, 0.5);
-        }
-        .suggestion-list { list-style: none; padding-left: 0; }
-        .suggestion-list li { display: flex; align-items: flex-start; gap: 0.5rem; }
-        .suggestion-list li svg { flex-shrink: 0; margin-top: 4px; }
-        .futuristic-text-glow {
-            text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WanderScript v.1 - Travel Storyboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        html { scroll-behavior: smooth; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #0B1120; /* Deep Navy Blue */
+            background-image: radial-gradient(rgba(34, 211, 238, 0.1) 1px, transparent 1px), radial-gradient(rgba(34, 211, 238, 0.1) 1px, #0B1120 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+        .btn { transition: all 0.2s ease-in-out; }
+        .btn:active:not(:disabled) { transform: scale(0.95); }
+        .btn-primary { background: linear-gradient(45deg, #22D3EE, #0891B2); color: white; box-shadow: 0 4px 15px rgba(34, 211, 238, 0.2); }
+        .btn-primary:hover:not(:disabled) { background: linear-gradient(45deg, #0891B2, #0e7490); box-shadow: 0 6px 20px rgba(34, 211, 238, 0.3); }
+        .btn-success { background-color: #16A34A; color: white; }
+        .btn-success:hover:not(:disabled) { background-color: #15803D; }
+        .btn-secondary { background-color: #374151; color: white; }
+        .btn-secondary:hover:not(:disabled) { background-color: #4B5563; }
+        .btn-ai { background: linear-gradient(45deg, #0891B2, #0d9488); color: white; }
+        .btn-ai:hover:not(:disabled) { background: linear-gradient(45deg, #06b6d4, #0f766e); }
+        .btn-prompt-canva { background-color: #0891b2; color: white; }
+        .btn-prompt-canva:hover:not(:disabled) { background-color: #0e7490; }
+        .btn-copy { background-color: #4B5563; color: #D1D5DB; }
+        .btn-copy:hover:not(:disabled) { background-color: #6B7280; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .loader, .inline-loader {
+            border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #22D3EE;
+            border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
+        }
+        .inline-loader {
+            width: 20px; height: 20px; border-width: 2px;
+            border-top-color: white; border-left-color: white; border-right-color: white; border-bottom-color: transparent;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .tab-btn { border-bottom: 2px solid transparent; }
+        .tab-btn.active { border-bottom-color: #22D3EE; color: #67e8f9; }
+        .prompt-output { 
+            font-family: 'Roboto Mono', monospace;
+            background-color: #111827; 
+            border: 1px solid #374151; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #e5e7eb;
+        }
+        .idea-card {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .idea-card:hover {
+            border-color: #0891B2;
+            transform: translateY(-2px);
+        }
+        .idea-card.selected {
+            border-color: #22D3EE;
+            background-color: #374151;
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+        }
+        .custom-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(10, 10, 10, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+        }
+        .custom-modal-overlay.visible {
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .custom-modal-content {
+            background-color: #1f2937;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2rem;
+            max-width: 90%;
+            width: 500px;
+            border: 1px solid #374151;
+            transform: scale(0.95);
+            transition: transform 0.3s ease-in-out;
+        }
+        .custom-modal-overlay.visible .custom-modal-content {
+            transform: scale(1);
+        }
+        .action-dna-tag {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .action-dna-tag.selected {
+            background-color: #0891B2;
+            color: white;
+            border-color: #0e7490;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem;
+            border: 1px solid rgba(55, 65, 81, 0.5);
+        }
+        .suggestion-list { list-style: none; padding-left: 0; }
+        .suggestion-list li { display: flex; align-items: flex-start; gap: 0.5rem; }
+        .suggestion-list li svg { flex-shrink: 0; margin-top: 4px; }
+        .futuristic-text-glow {
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+        }
+    </style>
 </head>
 <body class="text-gray-200 antialiased">
 
-    <div id="password-overlay" class="fixed inset-0 bg-gray-900/90 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="glass-card p-8 rounded-2xl shadow-2xl text-center w-full max-w-sm fade-in">
-            <img src="https://placehold.co/96x96/0891B2/FFFFFF?text=WS&font=poppins" alt="WanderScript v.1 Logo" class="h-24 w-24 rounded-full mx-auto mb-6"> <!-- DIUBAH -->
-            <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 mb-2 futuristic-text-glow">Akses Terbatas</h2>
-            <p class="text-gray-400 mb-6">Silakan masukkan kata JELAJAH2025 untuk melanjutkan.</p>
-            <form id="password-form" class="space-y-4">
-                <div class="relative">
-                    <input type="password" id="password-input" placeholder="Kata Sandi" class="w-full text-center bg-gray-800 border border-cyan-500/50 rounded-lg p-3 pr-10 focus:ring-cyan-400 focus:border-cyan-400">
-                    <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-cyan-400">
-                        <svg id="eye-icon-password" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
-                        <svg id="eye-slash-icon-password" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-slash-fill hidden" viewBox="0 0 16 16"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
-                    </button>
-                </div>
-                <button type="submit" class="btn btn-primary font-bold py-3 px-6 rounded-lg w-full">Masuk</button>
-            </form>
-            <p id="password-error" class="text-red-400 text-sm mt-4 hidden">Kata sandi salah. Coba lagi.</p>
-        </div>
-    </div>
+    <div id="app-wrapper" class="fade-in">
+        <header class="text-center py-4 px-4 md:px-8 sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto flex justify-between items-center glass-card p-3">
+                <div class="flex items-center gap-3">
+                    <img src="https://placehold.co/96x96/0891B2/FFFFFF?text=WS&font=poppins" alt="WanderScript v.1 Logo" class="h-10 w-10 rounded-full">
+                    <h1 class="text-xl md:text-2xl font-extrabold tracking-tight">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-sky-400 futuristic-text-glow">WanderScript v.1</span>
+                    </h1>
+                </div>
+                <div class="flex items-center gap-2 md:gap-3">
+                        <button id="importProjectBtn" class="btn btn-secondary font-semibold py-2 px-4 rounded-lg text-sm">Impor JSON</button>
+                        <button id="exportProjectBtn" class="btn btn-secondary font-semibold py-2 px-4 rounded-lg text-sm">Ekspor ke JSON</button>
+                        <button id="resetProjectBtn" class="btn btn-primary font-semibold py-2 px-4 rounded-lg text-sm">PROYEK BARU</button>
+                        <button id="openSettingsBtn" class="btn btn-secondary p-2 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311a1.464 1.464 0 0 1 0 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105 0l.17.31c.698 1.283 2.686.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 0-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105 0l-.17-.31zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/></svg>
+                        </button>
+                </div>
+            </div>
+        </header>
 
-    <div id="app-wrapper" class="fade-in" style="display: none;">
-        <header class="text-center py-4 px-4 md:px-8 sticky top-0 z-30">
-            <div class="max-w-7xl mx-auto flex justify-between items-center glass-card p-3">
-                <div class="flex items-center gap-3">
-                    <img src="https://placehold.co/96x96/0891B2/FFFFFF?text=WS&font=poppins" alt="WanderScript v.1 Logo" class="h-10 w-10 rounded-full"> <!-- DIUBAH -->
-                    <h1 class="text-xl md:text-2xl font-extrabold tracking-tight">
-                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-sky-400 futuristic-text-glow">WanderScript v.1</span> <!-- DIUBAH -->
-                    </h1>
-                </div>
-                <div class="flex items-center gap-2 md:gap-3">
-                        <button id="importProjectBtn" class="btn btn-secondary font-semibold py-2 px-4 rounded-lg text-sm">Impor JSON</button>
-                        <button id="exportProjectBtn" class="btn btn-secondary font-semibold py-2 px-4 rounded-lg text-sm">Ekspor ke JSON</button>
-                        <button id="resetProjectBtn" class="btn btn-primary font-semibold py-2 px-4 rounded-lg text-sm">PROYEK BARU</button>
-                        <button id="openSettingsBtn" class="btn btn-secondary p-2 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311a1.464 1.464 0 0 1 0 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105 0l.17.31c.698 1.283 2.686.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 0-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105 0l-.17-.31zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/></svg>
-                        </button>
-                </div>
-            </div>
-        </header>
+        <div class="flex flex-col md:flex-row max-w-7xl mx-auto gap-6 p-4 md:p-6">
+            
+            <aside class="w-full md:w-1/3 lg:w-1/4 space-y-6 flex-shrink-0">
+                
+                <div id="characterSection" class="glass-card">
+                    <div class="p-4">
+                        <h2 class="text-xl font-bold">Host / Blogger</h2>
+                    </div>
+                    <div class="p-4 border-t border-gray-700 space-y-4">
+                        <p class="text-sm text-gray-400">Buat host/blogger yang akan memandu vlog Anda. Gaya visual akan disesuaikan.</p>
+                        <button id="openAddCharModalBtn" class="btn btn-ai font-semibold py-2 px-4 rounded-lg w-full flex items-center justify-center gap-2">Buat Host Baru</button>
+                        
+                        <div class="pt-4 mt-4 border-t border-gray-700">
+                            <h3 class="text-sm font-semibold text-gray-400 mb-3 text-center">Atau Pilih Host Siap Pakai</h3>
+                            <div id="templateCharList" class="space-y-2">
+                            </div>
+                        </div>
 
-        <div class="flex flex-col md:flex-row max-w-7xl mx-auto gap-6 p-4 md:p-6">
-            
-            <aside class="w-full md:w-1/3 lg:w-1/4 space-y-6 flex-shrink-0">
-                
-                <div id="characterSection" class="glass-card">
-                    <div class="p-4">
-                        <h2 class="text-xl font-bold">Host / Blogger</h2> <!-- DIUBAH -->
-                    </div>
-                    <div class="p-4 border-t border-gray-700 space-y-4">
-                        <p class="text-sm text-gray-400">Buat host/blogger yang akan memandu vlog Anda. Gaya visual akan disesuaikan.</p> <!-- DIUBAH -->
-                        <button id="openAddCharModalBtn" class="btn btn-ai font-semibold py-2 px-4 rounded-lg w-full flex items-center justify-center gap-2">Buat Host Baru</button> <!-- DIUBAH -->
-                        
-                        <div class="pt-4 mt-4 border-t border-gray-700">
-                            <h3 class="text-sm font-semibold text-gray-400 mb-3 text-center">Atau Pilih Host Siap Pakai</h3> <!-- DIUBAH -->
-                            <div id="templateCharList" class="space-y-2">
-                            </div>
-                        </div>
+                        <div class="pt-4 mt-4 border-t border-gray-700">
+                             <h3 class="text-sm font-semibold text-gray-400 mb-2">Host Anda:</h3>
+                             <div id="charListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                        <div class="pt-4 mt-4 border-t border-gray-700">
-                             <h3 class="text-sm font-semibold text-gray-400 mb-2">Host Anda:</h3> <!-- DIUBAH -->
-                             <div id="charListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-2">
-                             </div>
-                        </div>
-                    </div>
-                </div>
+                <div id="directingSection" class="glass-card">
+                    <div class="p-4">
+                        <h2 class="text-xl font-bold">Arahan Vlog</h2>
+                    </div>
+                    <div class="p-4 border-t border-gray-700 space-y-4">
+                        <p class="text-sm text-gray-400">Atur nuansa dan lokasi untuk vlog perjalanan Anda.</p>
+                         <div class="p-3 bg-cyan-900/50 border border-cyan-500/50 rounded-lg text-center">
+                             <p class="font-bold text-cyan-300">Gaya Visual Vlog 🎨</p>
+                             <p class="text-xs text-cyan-400">Semua prompt akan dibuat dalam gaya **Vlog Perjalanan (Lucu & Informatif)**.</p>
+                         </div>
+                         <div id="narratorStyleLock" class="p-3 bg-cyan-900/50 border border-cyan-500/50 rounded-lg text-center mt-4">
+                             <p class="font-bold text-cyan-300">Gaya Audio Terpilih 🎙️</p>
+                             <p id="selectedNarratorStyleText" class="text-xs text-cyan-400"></p>
+                         </div>
+                        <div>
+                            <label for="locationSet" class="block text-sm font-semibold text-gray-300 mb-1">Latar Tempat:</label>
+                            <select id="locationSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm focus:ring-cyan-400 focus:border-cyan-400">
+                                <option value="pantai_tropis">Pantai Tropis (Contoh: Bali, Lombok)</option>
+                                <option value="gunung_megah">Gunung Megah (Contoh: Bromo, Rinjani)</option>
+                                <option value="kota_metropolitan">Kota Metropolitan (Contoh: Jakarta, Surabaya)</option>
+                                <option value="desa_tradisional">Desa Tradisional (Contoh: Wae Rebo, Penglipuran)</option>
+                                <option value="situs_sejarah">Situs Sejarah (Contoh: Borobudur, Prambanan)</option>
+                                <option value="pasar_lokal">Pasar Lokal / Kuliner</option>
+                                <option value="hutan_hujan">Hutan Hujan (Contoh: Kalimantan)</option>
+                                <option value="spot_foto_unik">Spot Foto Unik (Instagenic)</option>
+                                <option value="custom_location">Custom Latar...</option>
+                            </select>
+                            <input type="text" id="customLocationInput" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm mt-2 hidden" placeholder="e.g. Kawah Ijen di malam hari">
+                        </div>
+                        <div>
+                            <label for="cameraStyleSet" class="block text-sm font-semibold text-gray-300 mb-1">Sudut Pandang Kamera:</label>
+                            <select id="cameraStyleSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm focus:ring-cyan-400 focus:border-cyan-400">
+                                <option value="standard_cinematic">Sinematik Standar</option>
+                                <option value="fpv_drone_dive">Drone FPV</option>
+                                <option value="ground_level_action_cam">Kamera Aksi (Level Objek)</option>
+                                <option value="satellite_zoom">Zoom Satelit</option>
+                                <option value="dolly_zoom_vertigo">Dolly Zoom (Efek Vertigo)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="narratorLanguageSet" class="block text-sm font-semibold text-gray-300 mb-1">Bahasa Narator:</label>
+                            <select id="narratorLanguageSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm focus:ring-cyan-400 focus:border-cyan-400">
+                                <option value="no_narrator">Tanpa Narator</option>
+                                <option value="Indonesian">Bahasa Indonesia</option>
+                                <option value="English">English</option>
+                                <option value="Javanese">Bahasa Jawa</option>
+                                <option value="Sundanese">Bahasa Sunda</option>
+                                <option value="Japanese">Japanese</option>
+                                <option value="Spanish">Spanish</option>
+                                <option value="Arabic">Arabic</option>
+                                <option value="custom_language">Lainnya...</option>
+                            </select>
+                            <input type="text" id="customNarratorLanguageInput" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm mt-2 hidden" placeholder="e.g. Batak">
+                        </div>
+                        <div>
+                            <label for="narratorVoiceSet" class="block text-sm font-semibold text-gray-300 mb-1">Gaya Suara Narator:</label>
+                            <select id="narratorVoiceSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm focus:ring-cyan-400 focus:border-cyan-400">
+                                <option value="dialog_murni">Hanya Dialog (Tanpa Narator)</option>
+                                <option value="pria_dewasa_ramah">Pria Dewasa (Ramah & Jelas)</option>
+                                <option value="wanita_dewasa_lembut">Wanita Dewasa (Lembut & Keibuan)</option>
+                                <option value="anak_laki_laki_ceria">Anak Laki-laki (Ceria & Penasaran)</option>
+                                <option value="anak_perempuan_semangat">Anak Perempuan (Bersemangat)</option>
+                                <option value="narator_dokumenter_berwibawa">Narator Dokumenter (Berwibawa)</option>
+                                <option value="suara_robot_informatif">Suara Robot (Informatif)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-                <div id="directingSection" class="glass-card">
-                    <div class="p-4">
-                        <h2 class="text-xl font-bold">Arahan Vlog</h2> <!-- DIUBAH -->
-                    </div>
-                    <div class="p-4 border-t border-gray-700 space-y-4">
-                        <p class="text-sm text-gray-400">Atur nuansa dan lokasi untuk vlog perjalanan Anda.</p> <!-- DIUBAH -->
-                         <div class="p-3 bg-cyan-900/50 border border-cyan-500/50 rounded-lg text-center">
-                             <p class="font-bold text-cyan-300">Gaya Visual Vlog 🎨</p> <!-- DIUBAH -->
-                             <p class="text-xs text-cyan-400">Semua prompt akan dibuat dalam gaya **Vlog Perjalanan (Lucu & Informatif)**.</p> <!-- DIUBAH -->
-                         </div>
-                         <div id="narratorStyleLock" class="p-3 bg-cyan-900/50 border border-cyan-500/50 rounded-lg text-center mt-4">
-                             <p class="font-bold text-cyan-300">Gaya Audio Terpilih 🎙️</p>
-                             <p id="selectedNarratorStyleText" class="text-xs text-cyan-400"></p>
-                         </div>
-                        <div>
-                            <label for="locationSet" class="block text-sm font-semibold text-gray-300 mb-1">Latar Tempat:</label>
-                            <select id="locationSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm focus:ring-cyan-400 focus:border-cyan-400">
-                                <option value="pantai_tropis">Pantai Tropis (Contoh: Bali, Lombok)</option> <!-- DIUBAH -->
-                                <option value="gunung_megah">Gunung Megah (Contoh: Bromo, Rinjani)</option> <!-- DIUBAH -->
-                                <option value="kota_metropolitan">Kota Metropolitan (Contoh: Jakarta, Surabaya)</option> <!-- DIUBAH -->
-                                <option value="desa_tradisional">Desa Tradisional (Contoh: Wae Rebo, Penglipuran)</option> <!-- DIUBAH -->
-                                <option value="situs_sejarah">Situs Sejarah (Contoh: Borobudur, Prambanan)</option> <!-- DIUBAH -->
-                                <option value="pasar_lokal">Pasar Lokal / Kuliner</option> <!-- DIUBAH -->
-                                <option value="hutan_hujan">Hutan Hujan (Contoh: Kalimantan)</option> <!-- DIUBAH -->
-                                <option value="spot_foto_unik">Spot Foto Unik (Instagenic)</option> <!-- DIUBAH -->
-                                <option value="custom_location">Custom Latar...</option>
-                            </select>
-                            <input type="text" id="customLocationInput" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm mt-2 hidden" placeholder="e.g. Kawah Ijen di malam hari"> <!-- DIUBAH -->
-                        </div>
-                        <div>
-                            <label for="cameraStyleSet" class="block text-sm font-semibold text-gray-300 mb-1">Sudut Pandang Kamera:</label>
-                            <select id="cameraStyleSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm focus:ring-cyan-400 focus:border-cyan-400">
-                                <option value="standard_cinematic">Sinematik Standar</option>
-                                <option value="fpv_drone_dive">Drone FPV</option>
-                                <option value="ground_level_action_cam">Kamera Aksi (Level Objek)</option>
-                                <option value="satellite_zoom">Zoom Satelit</option>
-                                <option value="dolly_zoom_vertigo">Dolly Zoom (Efek Vertigo)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="narratorLanguageSet" class="block text-sm font-semibold text-gray-300 mb-1">Bahasa Narator:</label>
-                            <select id="narratorLanguageSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm focus:ring-cyan-400 focus:border-cyan-400">
-                                <option value="no_narrator">Tanpa Narator</option>
-                                <option value="Indonesian">Bahasa Indonesia</option>
-                                <option value="English">English</option>
-                                <option value="Javanese">Bahasa Jawa</option>
-                                <option value="Sundanese">Bahasa Sunda</option>
-                                <option value="Japanese">Japanese</option>
-                                <option value="Spanish">Spanish</option>
-                                <option value="Arabic">Arabic</option>
-                                <option value="custom_language">Lainnya...</option>
-                            </select>
-                            <input type="text" id="customNarratorLanguageInput" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm mt-2 hidden" placeholder="e.g. Batak">
-                        </div>
-                        <div>
-                            <label for="narratorVoiceSet" class="block text-sm font-semibold text-gray-300 mb-1">Gaya Suara Narator:</label>
-                            <select id="narratorVoiceSet" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm focus:ring-cyan-400 focus:border-cyan-400">
-                                <option value="dialog_murni">Hanya Dialog (Tanpa Narator)</option>
-                                <option value="pria_dewasa_ramah">Pria Dewasa (Ramah & Jelas)</option>
-                                <option value="wanita_dewasa_lembut">Wanita Dewasa (Lembut & Keibuan)</option>
-                                <option value="anak_laki_laki_ceria">Anak Laki-laki (Ceria & Penasaran)</option>
-                                <option value="anak_perempuan_semangat">Anak Perempuan (Bersemangat)</option>
-                                <option value="narator_dokumenter_berwibawa">Narator Dokumenter (Berwibawa)</option>
-                                <option value="suara_robot_informatif">Suara Robot (Informatif)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+            </aside>
 
-            </aside>
+            <main class="w-full md:w-2/3 lg:w-3/4 glass-card">
+                <div id="tabsContainer" class="border-b border-gray-700 flex">
+                    <button id="tabNaskah" class="tab-btn active font-semibold py-3 px-5">Naskah Cerita</button>
+                    <button id="tabStoryboard" class="tab-btn font-semibold py-3 px-5">Papan Cerita (Storyboard)</button>
+                </div>
 
-            <main class="w-full md:w-2/3 lg:w-3/4 glass-card">
-                <div id="tabsContainer" class="border-b border-gray-700 flex">
-                    <button id="tabNaskah" class="tab-btn active font-semibold py-3 px-5">Naskah Cerita</button>
-                    <button id="tabStoryboard" class="tab-btn font-semibold py-3 px-5">Papan Cerita (Storyboard)</button>
-                </div>
+                <div id="naskahView" class="p-6 space-y-6">
+                    <div>
+                        <label for="projectTitleInput" class="block mb-2 font-semibold text-gray-300">Judul / Destinasi Vlog:</label>
+                        <div class="flex items-center gap-2">
+                            <input id="projectTitleInput" type="text" placeholder="Contoh: 3 Hari Seru di Yogyakarta" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3 focus:ring-cyan-400 focus:border-cyan-400">
+                            <button id="generateScriptBtn" class="btn btn-ai font-semibold py-3 px-4 rounded-lg text-sm whitespace-nowrap hidden items-center justify-center gap-2">
+                                <span id="generateScriptBtnText">Buat Naskah</span>
+                                <div id="scriptLoader" class="inline-loader hidden"></div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <label for="scenarioInput" class="block mb-2 font-semibold text-gray-300">Naskah Cerita Lengkap:</label>
+                        <textarea id="scenarioInput" rows="10" placeholder="Tuliskan atau tempelkan (paste) seluruh naskah vlog Anda di sini. AI akan menganalisis dan membaginya menjadi beberapa segmen perjalanan." class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3 focus:ring-cyan-400 focus:border-cyan-400"></textarea>
+                    </div>
+                     <div>
+                        <label for="sceneCount" class="block mb-2 text-sm font-semibold text-gray-300">Jumlah Segmen Perjalanan:</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="sceneCount" min="1" max="20" value="3" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm focus:ring-cyan-400 focus:border-cyan-400">
+                            <button id="analyzeTextBtn" class="btn btn-ai font-semibold py-2 px-4 rounded-lg text-sm whitespace-nowrap">Analisis Teks</button>
+                        </div>
+                   </div>
+                    <div class="border-t border-gray-700 pt-6 text-center">
+                        <button id="generateBtn" class="btn btn-primary font-bold py-4 px-10 text-xl rounded-xl shadow-lg w-full" disabled>Buat Papan Cerita!</button>
+                    </div>
+                </div>
 
-                <div id="naskahView" class="p-6 space-y-6">
-                    <div>
-                        <label for="projectTitleInput" class="block mb-2 font-semibold text-gray-300">Judul / Destinasi Vlog:</label> <!-- DIUBAH -->
-                        <div class="flex items-center gap-2">
-                            <input id="projectTitleInput" type="text" placeholder="Contoh: 3 Hari Seru di Yogyakarta" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3 focus:ring-cyan-400 focus:border-cyan-400"> <!-- DIUBAH -->
-                            <button id="generateScriptBtn" class="btn btn-ai font-semibold py-3 px-4 rounded-lg text-sm whitespace-nowrap hidden items-center justify-center gap-2">
-                                <span id="generateScriptBtnText">Buat Naskah</span>
-                                <div id="scriptLoader" class="inline-loader hidden"></div>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <label for="scenarioInput" class="block mb-2 font-semibold text-gray-300">Naskah Cerita Lengkap:</label>
-                        <textarea id="scenarioInput" rows="10" placeholder="Tuliskan atau tempelkan (paste) seluruh naskah vlog Anda di sini. AI akan menganalisis dan membaginya menjadi beberapa segmen perjalanan." class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3 focus:ring-cyan-400 focus:border-cyan-400"></textarea> <!-- DIUBAH -->
-                    </div>
-                     <div>
-                        <label for="sceneCount" class="block mb-2 text-sm font-semibold text-gray-300">Jumlah Segmen Perjalanan:</label> <!-- DIUBAH -->
-                        <div class="flex items-center gap-2">
-                            <input type="number" id="sceneCount" min="1" max="20" value="3" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm focus:ring-cyan-400 focus:border-cyan-400">
-                            <button id="analyzeTextBtn" class="btn btn-ai font-semibold py-2 px-4 rounded-lg text-sm whitespace-nowrap">Analisis Teks</button>
-                        </div>
-                   </div>
-                    <div class="border-t border-gray-700 pt-6 text-center">
-                        <button id="generateBtn" class="btn btn-primary font-bold py-4 px-10 text-xl rounded-xl shadow-lg w-full" disabled>Buat Papan Cerita!</button>
-                    </div>
-                </div>
+                <div id="storyboardView" class="p-6 hidden">
+                    <div id="loader" class="mx-auto loader hidden"></div>
+                    <div id="storyboardOutput" class="space-y-6 hidden">
+                        </div>
+                    <div id="results-placeholder" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-20"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-easel2" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 0a.5.5 0 0 1 .447.276l.548.932 4.2 7.14a.5.5 0 0 1-.447.752H2.253a.5.5 0 0 1-.447-.752l4.2-7.14L7.553.276A.5.5 0 0 1 8 0zM8 2.366 4.636 8.5h6.728L8 2.366z"/><path d="M.5 11a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5zm-10.56 3.53a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L2.5 15.293l1.646-1.647a.5.5 0 0 1 .708 0zM14.06 14.53a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L11.5 15.293l1.646-1.647a.5.5 0 0 1 .708 0z"/></svg><p class="text-xl font-semibold">Hasil Papan Cerita Akan Muncul di Sini</p><p>Isi naskah cerita dan klik "Buat Papan Cerita!" untuk memulai.</p></div>
+                </div>
+                
+            </main>
+        </div>
+    </div>
+    
+    <div id="characterModal" class="custom-modal-overlay">
+        <div class="custom-modal-content">
+            <h2 id="characterModalTitle" class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 mb-6 text-center flex-shrink-0 futuristic-text-glow">Studio Host</h2>
+            <div id="char-step1" class="flex-grow">
+                 <p class="text-center text-gray-400 mb-4 text-sm">Langkah 1/3: Unggah gambar referensi atau deskripsikan host Anda.</p>
+                 <input type="file" id="charImageInput" class="hidden" accept="image/*">
+                 <div id="charImagePreview" class="w-full p-2 rounded-lg bg-gray-800 mb-4 flex items-center justify-center text-gray-500 min-h-[144px]">
+                     <span>Pratinjau Gambar</span>
+                 </div>
+                 <button id="uploadImageBtn" class="btn btn-secondary font-semibold py-2 px-4 rounded-lg w-full mb-4">Unggah Referensi</button>
+                <textarea id="charIdeaInput" placeholder="Deskripsikan host Anda. Contoh: 'Wanita muda ceria, rambut kuncir kuda, memakai kaos travel dan topi, membawa kamera.'" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3" rows="2"></textarea>
+                <button id="developCharBtn" class="btn btn-ai font-semibold py-2 px-6 rounded-lg w-full mt-4 flex items-center justify-center gap-2">
+                    <span id="developCharBtnText">✨ Desain Model Tokoh</span>
+                    <div id="charLoader" class="inline-loader hidden"></div>
+                </button>
+            </div>
 
-                <div id="storyboardView" class="p-6 hidden">
-                    <div id="loader" class="mx-auto loader hidden"></div>
-                    <!-- PERUBAHAN: 'storyboardOutput' sekarang 'hidden' by default dan 'results-placeholder' adalah sibling -->
-                    <div id="storyboardOutput" class="space-y-6 hidden">
-                        <!-- Hasil storyboard akan muncul di sini -->
-                    </div>
-                    <div id="results-placeholder" class="flex flex-col items-center justify-center h-full text-center text-gray-500 py-20"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-easel2" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 0a.5.5 0 0 1 .447.276l.548.932 4.2 7.14a.5.5 0 0 1-.447.752H2.253a.5.5 0 0 1-.447-.752l4.2-7.14L7.553.276A.5.5 0 0 1 8 0zM8 2.366 4.636 8.5h6.728L8 2.366z"/><path d="M.5 11a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5zm-10.56 3.53a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L2.5 15.293l1.646-1.647a.5.5 0 0 1 .708 0zM14.06 14.53a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L11.5 15.293l1.646-1.647a.5.5 0 0 1 .708 0z"/></svg><p class="text-xl font-semibold">Hasil Papan Cerita Akan Muncul di Sini</p><p>Isi naskah cerita dan klik "Buat Papan Cerita!" untuk memulai.</p></div>
-                </div>
-                
-            </main>
-        </div>
-    </div>
-    
-    <div id="characterModal" class="custom-modal-overlay">
-        <div class="custom-modal-content">
-            <h2 id="characterModalTitle" class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 mb-6 text-center flex-shrink-0 futuristic-text-glow">Studio Host</h2> <!-- DIUBAH -->
-            <div id="char-step1" class="flex-grow">
-                 <p class="text-center text-gray-400 mb-4 text-sm">Langkah 1/3: Unggah gambar referensi atau deskripsikan host Anda.</p> <!-- DIUBAH -->
-                 <input type="file" id="charImageInput" class="hidden" accept="image/*">
-                 <div id="charImagePreview" class="w-full p-2 rounded-lg bg-gray-800 mb-4 flex items-center justify-center text-gray-500 min-h-[144px]">
-                     <span>Pratinjau Gambar</span>
-                 </div>
-                 <button id="uploadImageBtn" class="btn btn-secondary font-semibold py-2 px-4 rounded-lg w-full mb-4">Unggah Referensi</button>
-                <textarea id="charIdeaInput" placeholder="Deskripsikan host Anda. Contoh: 'Wanita muda ceria, rambut kuncir kuda, memakai kaos travel dan topi, membawa kamera.'" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3" rows="2"></textarea> <!-- DIUBAH -->
-                <button id="developCharBtn" class="btn btn-ai font-semibold py-2 px-6 rounded-lg w-full mt-4 flex items-center justify-center gap-2">
-                    <span id="developCharBtnText">✨ Desain Model Tokoh</span>
-                    <div id="charLoader" class="inline-loader hidden"></div>
-                </button>
-            </div>
+            <div id="char-step2" class="hidden flex-grow overflow-y-auto pr-2">
+                <p class="text-center text-gray-400 mb-4 text-sm">Langkah 2/3: Periksa dan sunting detail host yang dihasilkan AI.</p>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="charBrandName" class="block text-sm font-semibold text-gray-300 mb-1">Nama Panggilan:</label>
+                            <input type="text" id="charBrandName" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3">
+                        </div>
+                        <div>
+                            <label for="charModelName" class="block text-sm font-semibold text-gray-300 mb-1">Peran:</label>
+                            <input type="text" id="charModelName" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="charConsistencyKey" class="block text-sm font-semibold text-gray-300 mb-1">ID Konsistensi:</label>
+                        <input type="text" id="charConsistencyKey" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3">
+                        <p class="text-xs text-gray-500 mt-1">ID unik agar visual tokoh konsisten di tiap adegan.</p>
+                    </div>
+                    <div>
+                        <label for="charDesignLanguage" class="block text-sm font-semibold text-gray-300 mb-1">Deskripsi Desain:</label>
+                        <textarea id="charDesignLanguage" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
 
-            <div id="char-step2" class="hidden flex-grow overflow-y-auto pr-2">
-                <p class="text-center text-gray-400 mb-4 text-sm">Langkah 2/3: Periksa dan sunting detail host yang dihasilkan AI.</p> <!-- DIUBAH -->
-                <div class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="charBrandName" class="block text-sm font-semibold text-gray-300 mb-1">Nama Panggilan:</label>
-                            <input type="text" id="charBrandName" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3">
-                        </div>
-                        <div>
-                            <label for="charModelName" class="block text-sm font-semibold text-gray-300 mb-1">Peran:</label>
-                            <input type="text" id="charModelName" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3">
-                        </div>
-                    </div>
-                    <div>
-                        <label for="charConsistencyKey" class="block text-sm font-semibold text-gray-300 mb-1">ID Konsistensi:</label>
-                        <input type="text" id="charConsistencyKey" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3">
-                        <p class="text-xs text-gray-500 mt-1">ID unik agar visual tokoh konsisten di tiap adegan.</p>
-                    </div>
-                    <div>
-                        <label for="charDesignLanguage" class="block text-sm font-semibold text-gray-300 mb-1">Deskripsi Desain:</label>
-                        <textarea id="charDesignLanguage" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3" rows="2"></textarea>
-                    </div>
-                </div>
-            </div>
+            <div id="char-step3" class="hidden flex-grow overflow-y-auto pr-2">
+                <p class="text-center text-gray-400 mb-4 text-sm">Langkah 3/3: Tentukan "DNA Aksi" host. Pilih aksi yang paling sesuai.</p>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-300 mb-2">Saran Aksi dari AI:</label>
+                    <div id="actionDnaSuggestions" class="flex flex-wrap gap-2">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label for="customActionDnaInput" class="block text-sm font-semibold text-gray-300 mb-1">Tambah Aksi Kustom:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="customActionDnaInput" placeholder="Contoh: Mencicipi makanan" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm">
+                        <button id="addCustomDnaBtn" class="btn btn-secondary text-sm font-semibold py-2 px-3 rounded-lg">Tambah</button>
+                    </div>
+                </div>
+                <div class="mt-4">
+                     <label class="block text-sm font-semibold text-gray-300 mb-2">Aksi Terpilih:</label>
+                     <div id="selectedActionDna" class="flex flex-wrap gap-2 p-2 bg-gray-800/50 rounded-lg border border-cyan-500/50 min-h-[40px]">
+                     </div>
+                </div>
+            </div>
+            
+            <div class="flex-shrink-0 pt-4 mt-4 border-t border-gray-700">
+                 <div id="char-step-buttons" class="flex justify-between items-center">
+                     <button id="closeCharModalBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg">Tutup</button>
+                     <div id="char-nav-buttons">
+                         <button id="charPrevBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg hidden">Kembali</button>
+                         <button id="charNextBtn" class="btn btn-primary font-semibold py-2 px-6 rounded-lg hidden">Lanjut</button>
+                         <button id="addCharBtn" class="btn btn-success font-semibold py-2 px-6 rounded-lg hidden">✅ Simpan Host</button>
+                     </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+        
+    <div id="settingsModal" class="custom-modal-overlay">
+        <div class="custom-modal-content">
+            <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 mb-2 text-center futuristic-text-glow">Pengaturan</h2>
+            <div>
+                <label for="apiKeyInput" class="block text-sm font-semibold text-gray-300 mb-1">Google AI API Key</label>
+                 <div class="relative">
+                    <input type="password" id="apiKeyInput" placeholder="Masukkan API Key Anda..." class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3 pr-10 text-sm">
+                    <button type="button" id="toggle-api-key" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-cyan-400">
+                         <svg id="eye-icon-apikey" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
+                        <svg id="eye-slash-icon-apikey" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-slash-fill hidden" viewBox="0 0 16 16"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">
+                    Jika generator mengalami error, gunakan API key pribadi.
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline">Dapatkan key gratis di Google AI Studio</a>.
+                </p>
+            </div>
+            <div class="mt-6 flex justify-between items-center pt-4 border-t border-gray-700">
+                <button id="clearApiKeyBtn" class="btn btn-secondary text-sm font-semibold py-2 px-4 rounded-lg">Hapus Key</button>
+                <div>
+                    <button id="closeSettingsModalBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg mr-2">Tutup</button>
+                    <button id="saveApiKeyBtn" class="btn btn-primary font-semibold py-2 px-6 rounded-lg">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            <div id="char-step3" class="hidden flex-grow overflow-y-auto pr-2">
-                <p class="text-center text-gray-400 mb-4 text-sm">Langkah 3/3: Tentukan "DNA Aksi" host. Pilih aksi yang paling sesuai.</p> <!-- DIUBAH -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-300 mb-2">Saran Aksi dari AI:</label>
-                    <div id="actionDnaSuggestions" class="flex flex-wrap gap-2">
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <label for="customActionDnaInput" class="block text-sm font-semibold text-gray-300 mb-1">Tambah Aksi Kustom:</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="customActionDnaInput" placeholder="Contoh: Mencicipi makanan" class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-2 text-sm"> <!-- DIUBAH -->
-                        <button id="addCustomDnaBtn" class="btn btn-secondary text-sm font-semibold py-2 px-3 rounded-lg">Tambah</button>
-                    </div>
-                </div>
-                <div class="mt-4">
-                     <label class="block text-sm font-semibold text-gray-300 mb-2">Aksi Terpilih:</label>
-                     <div id="selectedActionDna" class="flex flex-wrap gap-2 p-2 bg-gray-800/50 rounded-lg border border-cyan-500/50 min-h-[40px]">
-                     </div>
-                </div>
-            </div>
-            
-            <div class="flex-shrink-0 pt-4 mt-4 border-t border-gray-700">
-                 <div id="char-step-buttons" class="flex justify-between items-center">
-                     <button id="closeCharModalBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg">Tutup</button>
-                     <div id="char-nav-buttons">
-                         <button id="charPrevBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg hidden">Kembali</button>
-                         <button id="charNextBtn" class="btn btn-primary font-semibold py-2 px-6 rounded-lg hidden">Lanjut</button>
-                         <button id="addCharBtn" class="btn btn-success font-semibold py-2 px-6 rounded-lg hidden">✅ Simpan Host</button> <!-- DIUBAH -->
-                     </div>
-                 </div>
-            </div>
-        </div>
-    </div>
-        
-    <div id="settingsModal" class="custom-modal-overlay">
-        <div class="custom-modal-content">
-            <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 mb-2 text-center futuristic-text-glow">Pengaturan</h2>
-            <div>
-                <label for="apiKeyInput" class="block text-sm font-semibold text-gray-300 mb-1">Google AI API Key</label>
-                 <div class="relative">
-                    <input type="password" id="apiKeyInput" placeholder="Masukkan API Key Anda..." class="w-full bg-gray-800 border border-cyan-500/50 rounded-lg p-3 pr-10 text-sm">
-                    <button type="button" id="toggle-api-key" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-cyan-400">
-                         <svg id="eye-icon-apikey" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16"><path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
-                        <svg id="eye-slash-icon-apikey" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-slash-fill hidden" viewBox="0 0 16 16"><path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/><path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12-.708.708z"/></svg>
-                    </button>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">
-                    Jika generator mengalami error, gunakan API key pribadi.
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline">Dapatkan key gratis di Google AI Studio</a>.
-                </p>
-            </div>
-            <div class="mt-6 flex justify-between items-center pt-4 border-t border-gray-700">
-                <button id="clearApiKeyBtn" class="btn btn-secondary text-sm font-semibold py-2 px-4 rounded-lg">Hapus Key</button>
-                <div>
-                    <button id="closeSettingsModalBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg mr-2">Tutup</button>
-                    <button id="saveApiKeyBtn" class="btn btn-primary font-semibold py-2 px-6 rounded-lg">Simpan</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="notificationModal" class="fixed bottom-5 right-5 bg-gradient-to-r from-cyan-500 to-sky-500 text-white py-3 px-5 rounded-lg shadow-2xl hidden fade-in max-w-sm">
+        <p id="notificationText"></p>
+    </div>
 
-    <div id="notificationModal" class="fixed bottom-5 right-5 bg-gradient-to-r from-cyan-500 to-sky-500 text-white py-3 px-5 rounded-lg shadow-2xl hidden fade-in max-w-sm">
-        <p id="notificationText"></p>
-    </div>
+    <div id="confirmationModal" class="custom-modal-overlay">
+        <div class="custom-modal-content">
+            <h3 id="confirmationTitle" class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 mb-4 futuristic-text-glow">Konfirmasi</h3>
+            <p id="confirmationMessage" class="text-gray-300 mb-6">Apakah Anda yakin?</p>
+            <div class="flex justify-end gap-4">
+                <button id="confirmCancelBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg">Batal</button>
+                <button id="confirmOkBtn" class="btn btn-primary font-semibold py-2 px-6 rounded-lg">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <input type="file" id="importFileInput" class="hidden" accept=".json">
 
-    <div id="confirmationModal" class="custom-modal-overlay">
-        <div class="custom-modal-content">
-            <h3 id="confirmationTitle" class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400 mb-4 futuristic-text-glow">Konfirmasi</h3>
-            <p id="confirmationMessage" class="text-gray-300 mb-6">Apakah Anda yakin?</p>
-            <div class="flex justify-end gap-4">
-                <button id="confirmCancelBtn" class="btn btn-secondary font-semibold py-2 px-6 rounded-lg">Batal</button>
-                <button id="confirmOkBtn" class="btn btn-primary font-semibold py-2 px-6 rounded-lg">OK</button>
-            </div>
-        </div>
-    </div>
-    
-    <input type="file" id="importFileInput" class="hidden" accept=".json">
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- PASSWORD PROTECTION REMOVED ---
+        
+        // --- STATE & CONSTANTS ---
+        let characters = []; 
+        let storyboardData = []; 
+        let userApiKey = '';
+        let currentCharacterModalStep = 1;
+        let isEditingCharacter = false;
+        let editingCharacterIndex = -1;
+        let uploadedImageBase64 = null;
+        let uploadedImageType = null;
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- PASSWORD PROTECTION ---
-        const passwordOverlay = document.getElementById('password-overlay');
-        const passwordForm = document.getElementById('password-form');
-        const passwordInput = document.getElementById('password-input');
-        const passwordError = document.getElementById('password-error');
-        const appWrapperEl = document.getElementById('app-wrapper');
-        const CORRECT_PASSWORD = 'JELAJAH2025'; // DIUBAH
+        // Daftar host/blogger siap pakai
+        const templateCharacters = [
+            {
+                name: "Rian (Host Petualang)", brandName: "Rian", modelName: "Host Petualang",
+                description: "Seorang host pria muda, gaya chibi 3D yang imut dan energik. Dia memakai topi petualang, kemeja flanel, dan celana kargo. Dia membawa ransel kecil dan selalu tersenyum lebar, siap menjelajah.",
+                consistency_key: "chibi_host_rian_v1",
+                actionDNA: ["Menunjuk ke pemandangan", "Terlihat takjub", "Berjalan cepat", "Melihat peta"]
+            },
+            {
+                name: "Sari (Host Kuliner)", brandName: "Sari", modelName: "Host Kuliner",
+                description: "Seorang host wanita, gaya chibi 3D yang lucu dan ceria, mengenakan jilbab modern berwarna cerah. Dia memakai celemek imut dan sering terlihat memegang sendok atau makanan, dengan mata berbinar.",
+                consistency_key: "chibi_host_sari_v1",
+                actionDNA: ["Mencicipi makanan", "Reaksi 'enak!'", "Menjelaskan bahan", "Tersenyum ke kamera"]
+            },
+            {
+                name: "Bli Gede (Pemandu Budaya)", brandName: "Bli Gede", modelName: "Pemandu Budaya",
+                description: "Seorang pria Bali, gaya chibi 3D yang ramah dan berwibawa. Dia mengenakan udeng (ikat kepala Bali) dan kemeja batik. Senyumnya teduh dan dia sering berpose menjelaskan sesuatu dengan tangannya.",
+                consistency_key: "chibi_host_gede_v1",
+                actionDNA: ["Menjelaskan sejarah", "Menyambut (gestur Om Swastiastu)", "Tersenyum bijak"]
+            },
+            {
+                name: "Mas Bejo (Fotografer)", brandName: "Mas Bejo", modelName: "Fotografer Vlog",
+                description: "Seorang host pria chibi 3D dengan kacamata, sedikit kikuk namun lucu. Dia selalu membawa kamera DSLR besar yang hampir sebesar tubuhnya, mengenakan kaos polos dan rompi fotografer.",
+                consistency_key: "chibi_host_bejo_v1",
+                actionDNA: ["Mengambil foto", "Melihat hasil kamera", "Terjatuh (lucu)", "Memberi jempol"]
+            }
+        ];
 
-        const showApp = () => {
-            passwordOverlay.style.display = 'none';
-            appWrapperEl.style.display = 'block';
-        };
+        // Kata kunci gaya visual utama untuk vlog perjalanan
+        const BLOGGER_STYLE_KEYWORDS = {
+            style: "Bright cinematic travel vlog style, vlogger footage, cute 3D animated host (chibi style), informative graphic overlays, dynamic split-screen, beautiful landscape shots, golden hour lighting, drone shots, hyperdetailed, 8K, colorful",
+            negative: "dull, boring, corporate, dark, grainy, shaky cam (unless for effect), fantasy, magical effects, scary, ugly, deformed, text, watermark"
+        };
+        
+        const defaultState = { 
+            projectTitle: '',
+            scenario: '', 
+            sceneCount: 3, 
+            locationSet: 'pantai_tropis',
+            customLocation: '',
+            cameraStyleSet: 'standard_cinematic',
+            narratorVoiceSet: 'pria_dewasa_ramah'
+        };
+        let state = { ...defaultState };
 
-        if (sessionStorage.getItem('isVerified_WanderScript') === 'true') { // DIUBAH
-            showApp();
-        } else {
-            passwordOverlay.style.display = 'flex';
-        }
+        // --- DOM Elements ---
+        const projectTitleInput = document.getElementById('projectTitleInput');
+        const generateScriptBtn = document.getElementById('generateScriptBtn');
+        const generateScriptBtnText = document.getElementById('generateScriptBtnText');
+        const scriptLoader = document.getElementById('scriptLoader');
+        const charListContainer = document.getElementById('charListContainer');
+        const templateCharList = document.getElementById('templateCharList');
+        const scenarioInput = document.getElementById('scenarioInput');
+        const sceneCountInput = document.getElementById('sceneCount');
+        const analyzeTextBtn = document.getElementById('analyzeTextBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const storyboardOutput = document.getElementById('storyboardOutput');
+        const loader = document.getElementById('loader');
+        const resultsPlaceholder = document.getElementById('results-placeholder');
+        const locationSetInput = document.getElementById('locationSet');
+        const customLocationInput = document.getElementById('customLocationInput');
+        const cameraStyleSetInput = document.getElementById('cameraStyleSet');
+        const narratorLanguageSetInput = document.getElementById('narratorLanguageSet');
+        const customNarratorLanguageInput = document.getElementById('customNarratorLanguageInput');
+        const narratorVoiceSetInput = document.getElementById('narratorVoiceSet');
+        const selectedNarratorStyleText = document.getElementById('selectedNarratorStyleText');
+        const characterModal = document.getElementById('characterModal');
+        const characterModalTitle = document.getElementById('characterModalTitle');
+        const openAddCharModalBtn = document.getElementById('openAddCharModalBtn');
+        const charStep1 = document.getElementById('char-step1');
+        const charStep2 = document.getElementById('char-step2');
+        const charStep3 = document.getElementById('char-step3');
+        const developCharBtn = document.getElementById('developCharBtn');
+        const developCharBtnText = document.getElementById('developCharBtnText');
+        const charLoader = document.getElementById('charLoader');
+        const addCharBtn = document.getElementById('addCharBtn');
+        const closeCharModalBtn = document.getElementById('closeCharModalBtn');
+        const charPrevBtn = document.getElementById('charPrevBtn');
+        const charNextBtn = document.getElementById('charNextBtn');
+        const charBrandNameInput = document.getElementById('charBrandName');
+        const charModelNameInput = document.getElementById('charModelName');
+        const charConsistencyKeyInput = document.getElementById('charConsistencyKey');
+        const charDesignLanguageInput = document.getElementById('charDesignLanguage');
+        const actionDnaSuggestions = document.getElementById('actionDnaSuggestions');
+        const customActionDnaInput = document.getElementById('customActionDnaInput');
+        const addCustomDnaBtn = document.getElementById('addCustomDnaBtn');
+        const selectedActionDna = document.getElementById('selectedActionDna');
+        const charImageInput = document.getElementById('charImageInput');
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
+        const charImagePreview = document.getElementById('charImagePreview');
+        const charIdeaInput = document.getElementById('charIdeaInput');
+        const tabNaskah = document.getElementById('tabNaskah');
+        const tabStoryboard = document.getElementById('tabStoryboard');
+        const naskahView = document.getElementById('naskahView');
+        const storyboardView = document.getElementById('storyboardView');
+        const resetProjectBtn = document.getElementById('resetProjectBtn');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const confirmationTitle = document.getElementById('confirmationTitle');
+        const confirmationMessage = document.getElementById('confirmationMessage');
+        const confirmOkBtn = document.getElementById('confirmOkBtn');
+        const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+        const openSettingsBtn = document.getElementById('openSettingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsModalBtn = document.getElementById('closeSettingsModalBtn');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+        const clearApiKeyBtn = document.getElementById('clearApiKeyBtn');
+        const importProjectBtn = document.getElementById('importProjectBtn');
+        const exportProjectBtn = document.getElementById('exportProjectBtn');
+        const importFileInput = document.getElementById('importFileInput');
+        
+        // --- CORE API FUNCTION ---
+        const callGeminiAPI = async (prompt, schema = null, model = 'gemini-2.5-flash-preview-05-20', imageBase64 = null, imageType = null) => {
+            const apiKey = userApiKey || "";
+            let apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            
+            let parts = [{ text: prompt }];
+            if (imageBase64 && imageType) {
+                parts.unshift({ inlineData: { mimeType: imageType, data: imageBase64 } });
+            }
+            
+            let payload = { contents: [{ role: "user", parts: parts }] };
+            if (schema) {
+                payload.generationConfig = { responseMimeType: "application/json", responseSchema: schema };
+            }
 
-        passwordForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (passwordInput.value === CORRECT_PASSWORD) {
-                sessionStorage.setItem('isVerified_WanderScript', 'true'); // DIUBAH
-                showApp();
-            } else {
-                passwordError.classList.remove('hidden');
-                passwordInput.value = '';
-            }
-        });
+            let response;
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (response.ok) break;
+                if (response.status === 429) { await new Promise(resolve => setTimeout(resolve, delay)); delay *= 2; } 
+                else {
+                    const errorBody = await response.json();
+                    let errorMessage = `API request failed: ${errorBody.error?.message || 'Unknown error'}`;
+                    throw new Error(errorMessage);
+                }
+            }
 
-        // --- STATE & CONSTANTS ---
-        let characters = []; 
-        let storyboardData = []; 
-        let userApiKey = '';
-        let currentCharacterModalStep = 1;
-        let isEditingCharacter = false;
-        let editingCharacterIndex = -1;
-        let uploadedImageBase64 = null;
-        let uploadedImageType = null;
+            if (!response || !response.ok) throw new Error(`API request failed after retries.`);
+            const result = await response.json();
+            
+            const candidate = result.candidates?.[0];
 
-        // Daftar host/blogger siap pakai
-        const templateCharacters = [
-            {
-                name: "Rian (Host Petualang)", brandName: "Rian", modelName: "Host Petualang",
-                description: "Seorang host pria muda, gaya chibi 3D yang imut dan energik. Dia memakai topi petualang, kemeja flanel, dan celana kargo. Dia membawa ransel kecil dan selalu tersenyum lebar, siap menjelajah.",
-                consistency_key: "chibi_host_rian_v1",
-                actionDNA: ["Menunjuk ke pemandangan", "Terlihat takjub", "Berjalan cepat", "Melihat peta"]
-            },
-            {
-                name: "Sari (Host Kuliner)", brandName: "Sari", modelName: "Host Kuliner",
-                description: "Seorang host wanita, gaya chibi 3D yang lucu dan ceria, mengenakan jilbab modern berwarna cerah. Dia memakai celemek imut dan sering terlihat memegang sendok atau makanan, dengan mata berbinar.",
-                consistency_key: "chibi_host_sari_v1",
-                actionDNA: ["Mencicipi makanan", "Reaksi 'enak!'", "Menjelaskan bahan", "Tersenyum ke kamera"]
-            },
-            {
-                name: "Bli Gede (Pemandu Budaya)", brandName: "Bli Gede", modelName: "Pemandu Budaya",
-                description: "Seorang pria Bali, gaya chibi 3D yang ramah dan berwibawa. Dia mengenakan udeng (ikat kepala Bali) dan kemeja batik. Senyumnya teduh dan dia sering berpose menjelaskan sesuatu dengan tangannya.",
-                consistency_key: "chibi_host_gede_v1",
-                actionDNA: ["Menjelaskan sejarah", "Menyambut (gestur Om Swastiastu)", "Tersenyum bijak"]
-            },
-            {
-                name: "Mas Bejo (Fotografer)", brandName: "Mas Bejo", modelName: "Fotografer Vlog",
-                description: "Seorang host pria chibi 3D dengan kacamata, sedikit kikuk namun lucu. Dia selalu membawa kamera DSLR besar yang hampir sebesar tubuhnya, mengenakan kaos polos dan rompi fotografer.",
-                consistency_key: "chibi_host_bejo_v1",
-                actionDNA: ["Mengambil foto", "Melihat hasil kamera", "Terjatuh (lucu)", "Memberi jempol"]
-            }
-        ];
+            if (!candidate) {
+                 if (result.error) throw new Error(`API Error: ${result.error.message}`);
+                 throw new Error("No response candidates found from AI. The prompt may have been blocked.");
+            }
 
-        // Kata kunci gaya visual utama untuk vlog perjalanan
-        const BLOGGER_STYLE_KEYWORDS = {
-            style: "Bright cinematic travel vlog style, vlogger footage, cute 3D animated host (chibi style), informative graphic overlays, dynamic split-screen, beautiful landscape shots, golden hour lighting, drone shots, hyperdetailed, 8K, colorful",
-            negative: "dull, boring, corporate, dark, grainy, shaky cam (unless for effect), fantasy, magical effects, scary, ugly, deformed, text, watermark"
-        };
-        
-        const defaultState = { 
-            projectTitle: '',
-            scenario: '', 
-            sceneCount: 3, 
-            locationSet: 'pantai_tropis', // Diubah dari ruang_kelas
-            customLocation: '',
-            cameraStyleSet: 'standard_cinematic',
-            narratorVoiceSet: 'pria_dewasa_ramah'
-        };
-        let state = { ...defaultState };
+            if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+                 throw new Error(`Generation stopped due to: ${candidate.finishReason}. The prompt may have been blocked.`);
+            }
 
-        // --- DOM Elements ---
-        const projectTitleInput = document.getElementById('projectTitleInput');
-        const generateScriptBtn = document.getElementById('generateScriptBtn');
-        const generateScriptBtnText = document.getElementById('generateScriptBtnText');
-        const scriptLoader = document.getElementById('scriptLoader');
-        const charListContainer = document.getElementById('charListContainer');
-        const templateCharList = document.getElementById('templateCharList');
-        const scenarioInput = document.getElementById('scenarioInput');
-        const sceneCountInput = document.getElementById('sceneCount');
-        const analyzeTextBtn = document.getElementById('analyzeTextBtn');
-        const generateBtn = document.getElementById('generateBtn');
-        const storyboardOutput = document.getElementById('storyboardOutput');
-        const loader = document.getElementById('loader');
-        const resultsPlaceholder = document.getElementById('results-placeholder');
-        const locationSetInput = document.getElementById('locationSet');
-        const customLocationInput = document.getElementById('customLocationInput');
-        const cameraStyleSetInput = document.getElementById('cameraStyleSet');
-        const narratorLanguageSetInput = document.getElementById('narratorLanguageSet');
-        const customNarratorLanguageInput = document.getElementById('customNarratorLanguageInput');
-        const narratorVoiceSetInput = document.getElementById('narratorVoiceSet');
-        const selectedNarratorStyleText = document.getElementById('selectedNarratorStyleText');
-        const characterModal = document.getElementById('characterModal');
-        const characterModalTitle = document.getElementById('characterModalTitle');
-        const openAddCharModalBtn = document.getElementById('openAddCharModalBtn');
-        const charStep1 = document.getElementById('char-step1');
-        const charStep2 = document.getElementById('char-step2');
-        const charStep3 = document.getElementById('char-step3');
-        const developCharBtn = document.getElementById('developCharBtn');
-        const developCharBtnText = document.getElementById('developCharBtnText');
-        const charLoader = document.getElementById('charLoader');
-        const addCharBtn = document.getElementById('addCharBtn');
-        const closeCharModalBtn = document.getElementById('closeCharModalBtn');
-        const charPrevBtn = document.getElementById('charPrevBtn');
-        const charNextBtn = document.getElementById('charNextBtn');
-        const charBrandNameInput = document.getElementById('charBrandName');
-        const charModelNameInput = document.getElementById('charModelName');
-        const charConsistencyKeyInput = document.getElementById('charConsistencyKey');
-        const charDesignLanguageInput = document.getElementById('charDesignLanguage');
-        const actionDnaSuggestions = document.getElementById('actionDnaSuggestions');
-        const customActionDnaInput = document.getElementById('customActionDnaInput');
-        const addCustomDnaBtn = document.getElementById('addCustomDnaBtn');
-        const selectedActionDna = document.getElementById('selectedActionDna');
-        const charImageInput = document.getElementById('charImageInput');
-        const uploadImageBtn = document.getElementById('uploadImageBtn');
-        const charImagePreview = document.getElementById('charImagePreview');
-        const charIdeaInput = document.getElementById('charIdeaInput');
-        const tabNaskah = document.getElementById('tabNaskah');
-        const tabStoryboard = document.getElementById('tabStoryboard');
-        const naskahView = document.getElementById('naskahView');
-        const storyboardView = document.getElementById('storyboardView');
-        const resetProjectBtn = document.getElementById('resetProjectBtn');
-        const confirmationModal = document.getElementById('confirmationModal');
-        const confirmationTitle = document.getElementById('confirmationTitle');
-        const confirmationMessage = document.getElementById('confirmationMessage');
-        const confirmOkBtn = document.getElementById('confirmOkBtn');
-        const confirmCancelBtn = document.getElementById('confirmCancelBtn');
-        const openSettingsBtn = document.getElementById('openSettingsBtn');
-        const settingsModal = document.getElementById('settingsModal');
-        const closeSettingsModalBtn = document.getElementById('closeSettingsModalBtn');
-        const apiKeyInput = document.getElementById('apiKeyInput');
-        const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
-        const clearApiKeyBtn = document.getElementById('clearApiKeyBtn');
-        const importProjectBtn = document.getElementById('importProjectBtn');
-        const exportProjectBtn = document.getElementById('exportProjectBtn');
-        const importFileInput = document.getElementById('importFileInput');
-        
-        // --- CORE API FUNCTION ---
-        const callGeminiAPI = async (prompt, schema = null, model = 'gemini-2.5-flash-preview-05-20', imageBase64 = null, imageType = null) => {
-            const apiKey = userApiKey || "";
-            let apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            
-            let parts = [{ text: prompt }];
-            if (imageBase64 && imageType) {
-                parts.unshift({ inlineData: { mimeType: imageType, data: imageBase64 } });
-            }
-            
-            let payload = { contents: [{ role: "user", parts: parts }] };
-            if (schema) {
-                payload.generationConfig = { responseMimeType: "application/json", responseSchema: schema };
-            }
+            const text = candidate.content?.parts?.[0]?.text;
+            
+            if (typeof text !== 'string' || (schema && text.trim() === '')) {
+                 console.error("Invalid AI Response:", result); // Log the full invalid response for debugging
+                 throw new Error("Failed to get a valid text response from the AI. The response was empty or malformed.");
+            }
+            
+            return text;
+        };
+        
+        // --- UI & RENDER FUNCTIONS ---
+        const showNotification = (text, duration = 4000) => {
+            const modal = document.getElementById('notificationModal');
+            document.getElementById('notificationText').textContent = text;
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('hidden'), duration);
+        };
 
-            let response;
-            let delay = 1000;
-            for (let i = 0; i < 5; i++) {
-                response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (response.ok) break;
-                if (response.status === 429) { await new Promise(resolve => setTimeout(resolve, delay)); delay *= 2; } 
-                else {
-                    const errorBody = await response.json();
-                    let errorMessage = `API request failed: ${errorBody.error?.message || 'Unknown error'}`;
-                    throw new Error(errorMessage);
-                }
-            }
+        const showConfirmation = (title, message) => {
+            return new Promise((resolve) => {
+                confirmationTitle.textContent = title;
+                confirmationMessage.textContent = message;
+                confirmationModal.classList.add('visible');
+                const cleanupAndResolve = (value) => {
+                    confirmationModal.classList.remove('visible');
+                    resolve(value);
+                };
+                confirmOkBtn.onclick = () => cleanupAndResolve(true);
+                confirmCancelBtn.onclick = () => cleanupAndResolve(false);
+            });
+        };
 
-            if (!response || !response.ok) throw new Error(`API request failed after retries.`);
-            const result = await response.json();
-            
-            const candidate = result.candidates?.[0];
+        const updateNarratorLockDisplay = () => {
+            const selectedOption = narratorVoiceSetInput.options[narratorVoiceSetInput.selectedIndex];
+            selectedNarratorStyleText.textContent = selectedOption.text;
+        };
 
-            if (!candidate) {
-                 if (result.error) throw new Error(`API Error: ${result.error.message}`);
-                 throw new Error("No response candidates found from AI. The prompt may have been blocked.");
-            }
+        const updateUIState = () => { 
+            generateBtn.disabled = !(state.scenario.trim() !== '');
+        };
+        
+        const renderCharacters = () => {
+            charListContainer.innerHTML = characters.length === 0 ? '<p class="text-gray-500 italic text-sm">Belum ada host yang dibuat.</p>' : '';
+            characters.forEach((char, index) => {
+                const charElement = document.createElement('div');
+                charElement.className = 'bg-gray-800/50 p-3 rounded-lg flex items-center justify-between fade-in';
+                charElement.innerHTML = `
+                    <div class="flex-grow">
+                        <p class="font-bold text-cyan-400">${char.name}</p>
+                        <p class="text-xs text-gray-400">${char.modelName}</p>
+                    </div>
+                    <div class="flex gap-2">
+                         <button data-index="${index}" class="edit-char-btn text-cyan-400 hover:text-cyan-300 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/></svg></button>
+                        <button data-index="${index}" class="remove-char-btn text-red-500 hover:text-red-400 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg></button>
+                    </div>`;
+                charListContainer.appendChild(charElement);
+            });
+            updateUIState();
+        };
 
-            if (candidate.finishReason && candidate.finishReason !== 'STOP') {
-                 throw new Error(`Generation stopped due to: ${candidate.finishReason}. The prompt may have been blocked.`);
-            }
+        const renderTemplateCharacters = () => {
+            templateCharList.innerHTML = '';
+            templateCharacters.forEach((char, index) => {
+                const charElement = document.createElement('div');
+                charElement.className = 'bg-gray-800/60 p-3 rounded-lg flex items-center justify-between';
+                charElement.innerHTML = `
+                    <div>
+                        <p class="font-bold text-cyan-400 text-sm">${char.brandName}</p>
+                        <p class="text-xs text-gray-400">${char.modelName}</p>
+                    </div>
+                    <button data-index="${index}" class="add-template-char-btn btn btn-ai text-xs font-semibold py-1 px-3 rounded-md">Tambah</button>
+                `;
+                templateCharList.appendChild(charElement);
+            });
+        };
 
-            const text = candidate.content?.parts?.[0]?.text;
-            
-            if (typeof text !== 'string' || (schema && text.trim() === '')) {
-                 console.error("Invalid AI Response:", result); // Log the full invalid response for debugging
-                 throw new Error("Failed to get a valid text response from the AI. The response was empty or malformed.");
-            }
-            
-            return text;
-        };
-        
-        // --- UI & RENDER FUNCTIONS ---
-        const showNotification = (text, duration = 4000) => {
-            const modal = document.getElementById('notificationModal');
-            document.getElementById('notificationText').textContent = text;
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.add('hidden'), duration);
-        };
+        const createSceneCard = (scene, index) => {
+            const sceneEl = document.createElement('div');
+            sceneEl.className = `scene-card bg-gray-800/50 border border-gray-700 p-4 rounded-xl shadow-md fade-in`;
+            sceneEl.dataset.index = index;
 
-        const showConfirmation = (title, message) => {
-            return new Promise((resolve) => {
-                confirmationTitle.textContent = title;
-                confirmationMessage.textContent = message;
-                confirmationModal.classList.add('visible');
-                const cleanupAndResolve = (value) => {
-                    confirmationModal.classList.remove('visible');
-                    resolve(value);
-                };
-                confirmOkBtn.onclick = () => cleanupAndResolve(true);
-                confirmCancelBtn.onclick = () => cleanupAndResolve(false);
-            });
-        };
+            const narrationHtml = (scene.sound_design?.narration_script) 
+                ? `<div class="mt-3 pt-3 border-t border-gray-700"><p class="text-sm text-gray-400 italic"><strong>Narasi:</strong> ${scene.sound_design.narration_script}</p></div>` : '';
+            const sfxList = scene.sound_design?.sfx?.length > 0
+                ? `<ul class="suggestion-list text-sm mt-1">${scene.sound_design.sfx.map(sfx => `<li><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-soundwave" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8.5 2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-1 0v-11a.5.5 0 0 1 .5-.5zm-2 2a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zm4 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zm-6 1.5A.5.5 0 0 1 5 6v4a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm8 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm-10 1A.5.5 0 0 1 3 7v2a.5.5 0 0 1-1 0V7a.5.5 0 0 1 .5-.5zm12 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0V7a.5.5 0 0 1 .5-.5z"/></svg> ${sfx}</li>`).join('')}</ul>` : '<p class="text-sm text-gray-500 mt-1 italic">Tidak ada saran SFX.</p>';
+            const mixingGuide = scene.sound_design?.audio_mixing_guide
+                ? `<div class="mt-3"><h5 class="font-semibold text-cyan-400 text-sm flex items-center gap-2">🎧 Panduan Mixing Audio</h5><p class="text-sm text-gray-400 italic mt-1">${scene.sound_design.audio_mixing_guide}</p></div>` : '';
 
-        const updateNarratorLockDisplay = () => {
-            const selectedOption = narratorVoiceSetInput.options[narratorVoiceSetInput.selectedIndex];
-            selectedNarratorStyleText.textContent = selectedOption.text;
-        };
+            sceneEl.innerHTML = `
+                <div class="flex items-start gap-4">
+                    <div class="bg-gray-700 text-cyan-400 font-bold rounded-lg w-16 h-16 flex flex-col items-center justify-center text-center flex-shrink-0">
+                        <span class="text-xs uppercase tracking-wider">Segmen</span><span class="text-3xl">${scene.scene_number || (index + 1)}</span>
+                    </div>
+                    <div class="w-full">
+                        <h4 class="text-lg font-bold text-cyan-400 mb-2">${scene.scene_title || `Segmen Perjalanan ${index + 1}`}</h4>
+                        <p class="text-gray-300">${scene.scene_summary}</p>
+                        <div class="mt-3 pt-3 border-t border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h5 class="font-semibold text-cyan-400 text-sm flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-video" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.11-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"/></svg>Sinematografi</h5>
+                                <p class="text-sm text-gray-400 italic mt-1">${scene.cinematography?.shot_type || 'N/A'}, ${scene.cinematography?.camera_angle || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-cyan-400 text-sm flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-earbuds" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6.825 4.138c.596 0 1.08.484 1.08 1.08 0 .596-.484 1.08-1.08 1.08S5.745 5.814 5.745 5.218c0-.596.484-1.08 1.08-1.08zM9.175 4.138c.596 0 1.08.484 1.08 1.08 0 .596-.484 1.08-1.08 1.08S8.095 5.814 8.095 5.218c0-.596.484-1.08 1.08-1.08z"/><path d="M6.282 1a2.482 2.482 0 0 1 2.213 1.343c.286.44.445.94.445 1.457v2.212c0 .517-.16 1.017-.445 1.457a2.482 2.482 0 0 1-2.213 1.343A2.482 2.482 0 0 1 4.07 7.518c-.286-.44-.445-.94-.445-1.457V3.85c0-.517.16-1.017.445-1.457A2.482 2.482 0 0 1 6.282 1zm.238 6.026a1.482 1.482 0 0 0 1.32.793c.595 0 1.04-.376 1.25-.793.21-.417.325-.887.325-1.382V3.85c0-.494-.115-.964-.325-1.382C8.885 2.05 8.44 1.675 7.845 1.675a1.482 1.482 0 0 0-1.32.793c-.21.418-.324.888-.324 1.382v2.212c0 .494.114.965.324 1.382zM9.718 1a2.482 2.482 0 0 1 2.212 1.343c.286.44.445.94.445 1.457v2.212c0 .517-.16 1.017-.445 1.457a2.482 2.482 0 0 1-2.212 1.343A2.482 2.482 0 0 1 7.506 7.518c-.286-.44-.445-.94-.445-1.457V3.85c0-.517.16-1.017.445-1.457A2.482 2.482 0 0 1 9.718 1zm.238 6.026a1.482 1.482 0 0 0 1.32.793c.595 0 1.04-.376 1.25-.793.21-.417.325-.887.325-1.382V3.85c0-.494-.115-.964-.325-1.382C12.321 2.05 11.876 1.675 11.282 1.675a1.482 1.482 0 0 0-1.32.793c-.21.418-.325.888-.325 1.382v2.212c0 .494.115.965.325 1.382z"/></svg>Efek Suara</h5>${sfxList}
+                            </div>
+                        </div>
+                        ${mixingGuide} ${narrationHtml}
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-700">
+                     <div class="flex justify-end items-center flex-wrap gap-2">
+                         <button data-index="${index}" class="generate-blueprint-btn btn btn-secondary text-xs font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2">Prompt Detail</button>
+                         <button data-index="${index}" class="generate-timecode-btn btn btn-success text-xs font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2">JSON Timecode</button>
+                         <button data-index="${index}" class="generate-canva-prompt-btn btn btn-prompt-canva text-xs font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2">Prompt Canva</button>
+                    </div>
+                     <div class="prompt-results-grid grid grid-cols-1 gap-4 mt-4">
+                         <div class="blueprint-prompt-container"></div>
+                         <div class="canva-prompt-container"></div>
+                         <div class="timecode-script-container"></div>
+                    </div>
+                </div>`;
+            return sceneEl;
+        };
 
-        const updateUIState = () => { 
-            generateBtn.disabled = !(state.scenario.trim() !== '');
-        };
-        
-        const renderCharacters = () => {
-            charListContainer.innerHTML = characters.length === 0 ? '<p class="text-gray-500 italic text-sm">Belum ada host yang dibuat.</p>' : ''; // DIUBAH
-            characters.forEach((char, index) => {
-                const charElement = document.createElement('div');
-                charElement.className = 'bg-gray-800/50 p-3 rounded-lg flex items-center justify-between fade-in';
-                charElement.innerHTML = `
-                    <div class="flex-grow">
-                        <p class="font-bold text-cyan-400">${char.name}</p>
-                        <p class="text-xs text-gray-400">${char.modelName}</p>
-                    </div>
-                    <div class="flex gap-2">
-                         <button data-index="${index}" class="edit-char-btn text-cyan-400 hover:text-cyan-300 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/></svg></button>
-                        <button data-index="${index}" class="remove-char-btn text-red-500 hover:text-red-400 p-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg></button>
-                    </div>`;
-                charListContainer.appendChild(charElement);
-            });
-            updateUIState();
-        };
-
-        const renderTemplateCharacters = () => {
-            templateCharList.innerHTML = '';
-            templateCharacters.forEach((char, index) => {
-                const charElement = document.createElement('div');
-                charElement.className = 'bg-gray-800/60 p-3 rounded-lg flex items-center justify-between';
-                charElement.innerHTML = `
-                    <div>
-                        <p class="font-bold text-cyan-400 text-sm">${char.brandName}</p>
-                        <p class="text-xs text-gray-400">${char.modelName}</p>
-                    </div>
-                    <button data-index="${index}" class="add-template-char-btn btn btn-ai text-xs font-semibold py-1 px-3 rounded-md">Tambah</button>
-                `;
-                templateCharList.appendChild(charElement);
-            });
-        };
-
-        const createSceneCard = (scene, index) => {
-            const sceneEl = document.createElement('div');
-            sceneEl.className = `scene-card bg-gray-800/50 border border-gray-700 p-4 rounded-xl shadow-md fade-in`;
-            sceneEl.dataset.index = index;
-
-            const narrationHtml = (scene.sound_design?.narration_script) 
-                ? `<div class="mt-3 pt-3 border-t border-gray-700"><p class="text-sm text-gray-400 italic"><strong>Narasi:</strong> ${scene.sound_design.narration_script}</p></div>` : '';
-            const sfxList = scene.sound_design?.sfx?.length > 0
-                ? `<ul class="suggestion-list text-sm mt-1">${scene.sound_design.sfx.map(sfx => `<li><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-soundwave" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8.5 2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-1 0v-11a.5.5 0 0 1 .5-.5zm-2 2a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zm4 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zm-6 1.5A.5.5 0 0 1 5 6v4a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm8 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm-10 1A.5.5 0 0 1 3 7v2a.5.5 0 0 1-1 0V7a.5.5 0 0 1 .5-.5zm12 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0V7a.5.5 0 0 1 .5-.5z"/></svg> ${sfx}</li>`).join('')}</ul>` : '<p class="text-sm text-gray-500 mt-1 italic">Tidak ada saran SFX.</p>';
-            const mixingGuide = scene.sound_design?.audio_mixing_guide
-                ? `<div class="mt-3"><h5 class="font-semibold text-cyan-400 text-sm flex items-center gap-2">🎧 Panduan Mixing Audio</h5><p class="text-sm text-gray-400 italic mt-1">${scene.sound_design.audio_mixing_guide}</p></div>` : '';
-
-            sceneEl.innerHTML = `
-                <div class="flex items-start gap-4">
-                    <div class="bg-gray-700 text-cyan-400 font-bold rounded-lg w-16 h-16 flex flex-col items-center justify-center text-center flex-shrink-0">
-                        <span class="text-xs uppercase tracking-wider">Segmen</span><span class="text-3xl">${scene.scene_number || (index + 1)}</span>
-                    </div>
-                    <div class="w-full">
-                        <h4 class="text-lg font-bold text-cyan-400 mb-2">${scene.scene_title || `Segmen Perjalanan ${index + 1}`}</h4> <!-- DIUBAH -->
-                        <p class="text-gray-300">${scene.scene_summary}</p>
-                        <div class="mt-3 pt-3 border-t border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <h5 class="font-semibold text-cyan-400 text-sm flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-video" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.11-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556v4.35zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H2z"/></svg>Sinematografi</h5>
-                                <p class="text-sm text-gray-400 italic mt-1">${scene.cinematography?.shot_type || 'N/A'}, ${scene.cinematography?.camera_angle || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <h5 class="font-semibold text-cyan-400 text-sm flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-earbuds" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6.825 4.138c.596 0 1.08.484 1.08 1.08 0 .596-.484 1.08-1.08 1.08S5.745 5.814 5.745 5.218c0-.596.484-1.08 1.08-1.08zM9.175 4.138c.596 0 1.08.484 1.08 1.08 0 .596-.484 1.08-1.08 1.08S8.095 5.814 8.095 5.218c0-.596.484-1.08 1.08-1.08z"/><path d="M6.282 1a2.482 2.482 0 0 1 2.213 1.343c.286.44.445.94.445 1.457v2.212c0 .517-.16 1.017-.445 1.457a2.482 2.482 0 0 1-2.213 1.343A2.482 2.482 0 0 1 4.07 7.518c-.286-.44-.445-.94-.445-1.457V3.85c0-.517.16-1.017.445-1.457A2.482 2.482 0 0 1 6.282 1zm.238 6.026a1.482 1.482 0 0 0 1.32.793c.595 0 1.04-.376 1.25-.793.21-.417.325-.887.325-1.382V3.85c0-.494-.115-.964-.325-1.382C8.885 2.05 8.44 1.675 7.845 1.675a1.482 1.482 0 0 0-1.32.793c-.21.418-.324.888-.324 1.382v2.212c0 .494.114.965.324 1.382zM9.718 1a2.482 2.482 0 0 1 2.212 1.343c.286.44.445.94.445 1.457v2.212c0 .517-.16 1.017-.445 1.457a2.482 2.482 0 0 1-2.212 1.343A2.482 2.482 0 0 1 7.506 7.518c-.286-.44-.445-.94-.445-1.457V3.85c0-.517.16-1.017.445-1.457A2.482 2.482 0 0 1 9.718 1zm.238 6.026a1.482 1.482 0 0 0 1.32.793c.595 0 1.04-.376 1.25-.793.21-.417.325-.887.325-1.382V3.85c0-.494-.115-.964-.325-1.382C12.321 2.05 11.876 1.675 11.282 1.675a1.482 1.482 0 0 0-1.32.793c-.21.418-.325.888-.325 1.382v2.212c0 .494.115.965.325 1.382z"/></svg>Efek Suara</h5>${sfxList}
-                            </div>
-                        </div>
-                        ${mixingGuide} ${narrationHtml}
-                    </div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-gray-700">
-                     <div class="flex justify-end items-center flex-wrap gap-2">
-                         <button data-index="${index}" class="generate-blueprint-btn btn btn-secondary text-xs font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2">Prompt Detail</button>
-                         <button data-index="${index}" class="generate-timecode-btn btn btn-success text-xs font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2">JSON Timecode</button>
-                         <button data-index="${index}" class="generate-canva-prompt-btn btn btn-prompt-canva text-xs font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2">Prompt Canva</button>
-                    </div>
-                     <div class="prompt-results-grid grid grid-cols-1 gap-4 mt-4">
-                         <div class="blueprint-prompt-container"></div>
-                         <div class="canva-prompt-container"></div>
-                         <div class="timecode-script-container"></div>
-                    </div>
-                </div>`;
-            return sceneEl;
-        };
-
-        const renderStoryboard = (data) => {
-            storyboardOutput.innerHTML = '';
-            if (!data || data.length === 0) {
-                if (document.getElementById('tabStoryboard').classList.contains('active')) {
-                    resultsPlaceholder.classList.remove('hidden');
-                    storyboardOutput.classList.add('hidden'); // PERUBAHAN
-                }
-                return;
-            }
-            resultsPlaceholder.classList.add('hidden');
-            storyboardOutput.classList.remove('hidden'); // PERUBAHAN
-            data.forEach((scene, index) => storyboardOutput.appendChild(createSceneCard(scene, index)));
-        };
-        
-        // --- CORE LOGIC FUNCTIONS ---
-        const handleGenerateScript = async () => {
-            const topic = projectTitleInput.value.trim();
-            if (topic === '') {
-                showNotification("Silakan masukkan judul atau topik terlebih dahulu.");
-                return;
-            }
-            generateScriptBtn.disabled = true;
-            scriptLoader.classList.remove('hidden');
-            generateScriptBtnText.textContent = 'Membuat...';
-            
-            const prompt = `Anda adalah seorang travel blogger dan penulis naskah video yang handal. Buat sebuah **naskah vlog perjalanan yang menarik dan informatif** tentang topik: "${topic}". Naskah harus ditulis dengan gaya "storytelling" yang lucu dan informatif, seolah-olah sedang berbicara langsung ke kamera.
+        const renderStoryboard = (data) => {
+            storyboardOutput.innerHTML = '';
+            if (!data || data.length === 0) {
+                if (document.getElementById('tabStoryboard').classList.contains('active')) {
+                    resultsPlaceholder.classList.remove('hidden');
+                    storyboardOutput.classList.add('hidden');
+                }
+                return;
+            }
+            resultsPlaceholder.classList.add('hidden');
+            storyboardOutput.classList.remove('hidden');
+            data.forEach((scene, index) => storyboardOutput.appendChild(createSceneCard(scene, index)));
+        };
+        
+        // --- CORE LOGIC FUNCTIONS ---
+        const handleGenerateScript = async () => {
+            const topic = projectTitleInput.value.trim();
+            if (topic === '') {
+                showNotification("Silakan masukkan judul atau topik terlebih dahulu.");
+                return;
+            }
+            generateScriptBtn.disabled = true;
+            scriptLoader.classList.remove('hidden');
+            generateScriptBtnText.textContent = 'Membuat...';
+            
+            const prompt = `Anda adalah seorang travel blogger dan penulis naskah video yang handal. Buat sebuah **naskah vlog perjalanan yang menarik dan informatif** tentang topik: "${topic}". Naskah harus ditulis dengan gaya "storytelling" yang lucu dan informatif, seolah-olah sedang berbicara langsung ke kamera.
 Bagi naskah menjadi 3 paragraf logis yang cocok untuk video travel:
 - Paragraf 1: Pembukaan (Hook/Salam pembuka, perkenalkan lokasi, dan apa yang akan dilakukan).
 - Paragraf 2: Isi (Jelajahi 2-3 highlights utama dari lokasi, berikan fakta menarik/tips).
 - Paragraf 3: Penutupan (Kesimpulan singkat/rekap, ajakan untuk berkunjung, dan salam penutup/call-to-action).
-Gunakan bahasa yang santai, ceria, dan "kekinian" agar naskah mudah dibagi menjadi beberapa segmen video.`; // DIUBAH TOTAL
-            
-            try {
-                const resultText = await callGeminiAPI(prompt);
-                scenarioInput.value = resultText;
-                state.scenario = resultText;
-                updateUIState();
-                showNotification("Naskah berhasil dibuat!");
-                handleAnalyzeText(); // Automatically analyze the new script
-            } catch (error) {
-                console.error("Script generation error:", error);
-                showNotification(`Gagal membuat naskah: ${error.message}`);
-            } finally {
-                generateScriptBtn.disabled = false;
-                scriptLoader.classList.add('hidden');
-                generateScriptBtnText.textContent = 'Buat Naskah';
-            }
-        };
+Gunakan bahasa yang santai, ceria, dan "kekinian" agar naskah mudah dibagi menjadi beberapa segmen video.`;
+            
+            try {
+                const resultText = await callGeminiAPI(prompt);
+                scenarioInput.value = resultText;
+                state.scenario = resultText;
+                updateUIState();
+                showNotification("Naskah berhasil dibuat!");
+                handleAnalyzeText(); // Automatically analyze the new script
+            } catch (error) {
+                console.error("Script generation error:", error);
+                showNotification(`Gagal membuat naskah: ${error.message}`);
+            } finally {
+                generateScriptBtn.disabled = false;
+                scriptLoader.classList.add('hidden');
+                generateScriptBtnText.textContent = 'Buat Naskah';
+            }
+        };
 
-        const handleAnalyzeText = () => {
-            const text = scenarioInput.value;
-            if (text.trim() === '') {
-                showNotification("Silakan tulis naskah cerita terlebih dahulu.");
-                return;
-            }
-            const wordCount = text.trim().split(/\s+/).length;
-            const suggestedScenes = Math.max(1, Math.ceil(wordCount / 20)); // Approx. 20 words per 8-sec scene
-            sceneCountInput.value = suggestedScenes;
-            state.sceneCount = suggestedScenes;
-            showNotification(`Disarankan ${suggestedScenes} segmen untuk vlog ini.`); // DIUBAH
-        };
-        
-        const handleGenerateStoryboard = async () => {
-            loader.classList.remove('hidden');
-            resultsPlaceholder.classList.add('hidden');
-            storyboardOutput.innerHTML = '';
-            storyboardOutput.classList.add('hidden'); // PERUBAHAN
-            switchTab(tabStoryboard, storyboardView);
+        const handleAnalyzeText = () => {
+            const text = scenarioInput.value;
+            if (text.trim() === '') {
+                showNotification("Silakan tulis naskah cerita terlebih dahulu.");
+                return;
+            }
+            const wordCount = text.trim().split(/\s+/).length;
+            const suggestedScenes = Math.max(1, Math.ceil(wordCount / 20)); // Approx. 20 words per 8-sec scene
+            sceneCountInput.value = suggestedScenes;
+            state.sceneCount = suggestedScenes;
+            showNotification(`Disarankan ${suggestedScenes} segmen untuk vlog ini.`);
+        };
+        
+        const handleGenerateStoryboard = async () => {
+            loader.classList.remove('hidden');
+            resultsPlaceholder.classList.add('hidden');
+            storyboardOutput.innerHTML = '';
+            storyboardOutput.classList.add('hidden');
+            switchTab(tabStoryboard, storyboardView);
 
-            const characterDetails = characters.length > 0 ? `Gunakan host/blogger berikut dalam adegan jika relevan. PASTIKAN visual mereka konsisten.
-                Host (JSON): ${JSON.stringify(characters.map(c => ({ name: c.name, description: c.description, consistency_key: c.consistency_key })), null, 2)}` : "Tidak ada host spesifik."; // DIUBAH
-            
-            let locationContext = `Latar Tempat: ${locationSetInput.options[locationSetInput.selectedIndex].text}.`;
-            if (locationSetInput.value === 'custom_location') locationContext = `Latar Tempat: ${customLocationInput.value.trim()}.`;
-            
-            const cameraStyleContext = `Gaya Kamera: '${cameraStyleSetInput.options[cameraStyleSetInput.selectedIndex].text}'.`;
-            const videoStyleContext = `Gaya Visual Video: Wajib menggunakan gaya "Vlog Perjalanan" (lucu, informatif, sinematik, dengan host chibi 3D).`; // DIUBAH
-            
-            let narratorLanguage = narratorLanguageSetInput.value;
-            let narratorLanguageText = narratorLanguageSetInput.options[narratorLanguageSetInput.selectedIndex].text;
-            if (narratorLanguage === 'custom_language') {
-                narratorLanguage = customNarratorLanguageInput.value.trim() || 'Indonesian';
-                narratorLanguageText = narratorLanguage;
-            }
-            const narratorVoiceContext = `Gaya Suara Narator: ${narratorVoiceSetInput.options[narratorVoiceSetInput.selectedIndex].text}.`;
-            
-            let narrationContext;
-            if (narratorLanguage === 'no_narrator') {
-                narrationContext = "Video ini tidak menggunakan narasi.";
-            } else if (narratorVoiceSetInput.value === 'dialog_murni') {
-                narrationContext = "Video ini hanya menggunakan dialog antar karakter, TANPA narator. Hasilkan dialog berdasarkan naskah.";
-            } else {
-                narrationContext = `Naskah narasi harus dalam Bahasa ${narratorLanguageText}. ${narratorVoiceContext}`;
-            }
+            const characterDetails = characters.length > 0 ? `Gunakan host/blogger berikut dalam adegan jika relevan. PASTIKAN visual mereka konsisten.
+                Host (JSON): ${JSON.stringify(characters.map(c => ({ name: c.name, description: c.description, consistency_key: c.consistency_key })), null, 2)}` : "Tidak ada host spesifik.";
+            
+            let locationContext = `Latar Tempat: ${locationSetInput.options[locationSetInput.selectedIndex].text}.`;
+            if (locationSetInput.value === 'custom_location') locationContext = `Latar Tempat: ${customLocationInput.value.trim()}.`;
+            
+            const cameraStyleContext = `Gaya Kamera: '${cameraStyleSetInput.options[cameraStyleSetInput.selectedIndex].text}'.`;
+            const videoStyleContext = `Gaya Visual Video: Wajib menggunakan gaya "Vlog Perjalanan" (lucu, informatif, sinematik, dengan host chibi 3D).`;
+            
+            let narratorLanguage = narratorLanguageSetInput.value;
+            let narratorLanguageText = narratorLanguageSetInput.options[narratorLanguageSetInput.selectedIndex].text;
+            if (narratorLanguage === 'custom_language') {
+                narratorLanguage = customNarratorLanguageInput.value.trim() || 'Indonesian';
+                narratorLanguageText = narratorLanguage;
+            }
+            const narratorVoiceContext = `Gaya Suara Narator: ${narratorVoiceSetInput.options[narratorVoiceSetInput.selectedIndex].text}.`;
+            
+            let narrationContext;
+            if (narratorLanguage === 'no_narrator') {
+                narrationContext = "Video ini tidak menggunakan narasi.";
+            } else if (narratorVoiceSetInput.value === 'dialog_murni') {
+                narrationContext = "Video ini hanya menggunakan dialog antar karakter, TANPA narator. Hasilkan dialog berdasarkan naskah.";
+            } else {
+                narrationContext = `Naskah narasi harus dalam Bahasa ${narratorLanguageText}. ${narratorVoiceContext}`;
+            }
 
-            let narrationInstruction;
-            if (narratorLanguage === 'no_narrator') {
-                narrationInstruction = `* 'narration_script' HARUS dikosongkan.`;
-            } else if (narratorVoiceSetInput.value === 'dialog_murni') {
-                narrationInstruction = `* 'narration_script' HARUS berisi DIALOG antar karakter dari naskah untuk segmen ini, BUKAN narasi. Jika tidak ada dialog, biarkan kosong. Dialog harus dalam Bahasa ${narratorLanguageText}.`;
-            } else {
-                narrationInstruction = `* Tulis 'narration_script' yang **SANGAT RINGKAS** (1-2 kalimat pendek, maks 20 kata) sebagai NARASI dari naskah asli untuk segmen tersebut. Naskah harus dalam Bahasa ${narratorLanguageText}.`;
-            }
+            let narrationInstruction;
+            if (narratorLanguage === 'no_narrator') {
+                narrationInstruction = `* 'narration_script' HARUS dikosongkan.`;
+            } else if (narratorVoiceSetInput.value === 'dialog_murni') {
+                narrationInstruction = `* 'narration_script' HARUS berisi DIALOG antar karakter dari naskah untuk segmen ini, BUKAN narasi. Jika tidak ada dialog, biarkan kosong. Dialog harus dalam Bahasa ${narratorLanguageText}.`;
+            } else {
+                narrationInstruction = `* Tulis 'narration_script' yang **SANGAT RINGKAS** (1-2 kalimat pendek, maks 20 kata) sebagai NARASI dari naskah asli untuk segmen tersebut. Naskah harus dalam Bahasa ${narratorLanguageText}.`;
+            }
 
-            const prompt = `Anda adalah seorang Sutradara Vlog Perjalanan AI. Tugas Anda adalah mengubah naskah vlog panjang menjadi papan cerita (storyboard) dalam format JSON.
+            const prompt = `Anda adalah seorang Sutradara Vlog Perjalanan AI. Tugas Anda adalah mengubah naskah vlog panjang menjadi papan cerita (storyboard) dalam format JSON.
 
 **Konteks & Aturan:**
-1.  **Naskah Vlog Utama:** \`\`\`${state.scenario}\`\`\`
-2.  **Jumlah Segmen:** Bagi naskah di atas menjadi persis **${state.sceneCount} segmen** yang logis.
-3.  **Gaya Visual (WAJIB):** Semua deskripsi visual HARUS sesuai dengan gaya **"Vlog Perjalanan Sinematik"** (terang, indah) yang dipadukan dengan **"Host Chibi 3D yang Imut dan Informatif"**. Bayangkan gabungan shot drone indah dengan host animasi lucu yang muncul di layar.
-4.  **Karakter (Host):** ${characterDetails}
-5.  **Info Tambahan:** Latar: ${locationContext}, Kamera: ${cameraStyleContext}, Narasi: ${narrationContext}.
-6.  **Output:** Hasilkan JSON yang berisi array 'storyboard'. Untuk setiap segmen:
-    * Buat 'scene_title' yang menarik (tema travel).
-    * Buat 'scene_summary' yang merangkum bagian naskah untuk segmen itu, dengan deskripsi visual yang kaya sesuai gaya Vlog Chibi.
-    ${narrationInstruction}
-    * 'audio_mixing_guide' harus dalam Bahasa Inggris.
+1.  **Naskah Vlog Utama:** \`\`\`${state.scenario}\`\`\`
+2.  **Jumlah Segmen:** Bagi naskah di atas menjadi persis **${state.sceneCount} segmen** yang logis.
+3.  **Gaya Visual (WAJIB):** Semua deskripsi visual HARUS sesuai dengan gaya **"Vlog Perjalanan Sinematik"** (terang, indah) yang dipadukan dengan **"Host Chibi 3D yang Imut dan Informatif"**. Bayangkan gabungan shot drone indah dengan host animasi lucu yang muncul di layar.
+4.  **Karakter (Host):** ${characterDetails}
+5.  **Info Tambahan:** Latar: ${locationContext}, Kamera: ${cameraStyleContext}, Narasi: ${narrationContext}.
+6.  **Output:** Hasilkan JSON yang berisi array 'storyboard'. Untuk setiap segmen:
+    * Buat 'scene_title' yang menarik (tema travel).
+    * Buat 'scene_summary' yang merangkum bagian naskah untuk segmen itu, dengan deskripsi visual yang kaya sesuai gaya Vlog Chibi.
+    ${narrationInstruction}
+    * 'audio_mixing_guide' harus dalam Bahasa Inggris.
 
-Pastikan setiap segmen melanjutkan cerita dari segmen sebelumnya secara alami.`; // PERBAIKAN: Menghapus \ sebelum backtick penutup
-            
-            const masterSceneObjectSchema = {
-                type: "OBJECT", properties: {
-                    scene_number: { type: "NUMBER" }, scene_title: { type: "STRING" }, scene_summary: { type: "STRING" },
-                    cinematography: { type: "OBJECT", properties: { shot_type: { type: "STRING" }, camera_angle: { type: "STRING" }, camera_movement: { type: "STRING" } } },
-                    sound_design: { type: "OBJECT", properties: { sfx: { type: "ARRAY", items: { type: "STRING" } }, ambience: { type: "STRING" }, narration_script: { type: "STRING" }, audio_mixing_guide: { type: "STRING" } } }
-                }, required: ["scene_number", "scene_title", "scene_summary", "cinematography", "sound_design"]
-            };
+Pastikan setiap segmen melanjutkan cerita dari segmen sebelumnya secara alami.`;
+            
+            const masterSceneObjectSchema = {
+                type: "OBJECT", properties: {
+                    scene_number: { type: "NUMBER" }, scene_title: { type: "STRING" }, scene_summary: { type: "STRING" },
+                    cinematography: { type: "OBJECT", properties: { shot_type: { type: "STRING" }, camera_angle: { type: "STRING" }, camera_movement: { type: "STRING" } } },
+                    sound_design: { type: "OBJECT", properties: { sfx: { type: "ARRAY", items: { type: "STRING" } }, ambience: { type: "STRING" }, narration_script: { type: "STRING" }, audio_mixing_guide: { type: "STRING" } } }
+                }, required: ["scene_number", "scene_title", "scene_summary", "cinematography", "sound_design"]
+            };
 
-            const schema = { type: "OBJECT", properties: { storyboard: { type: "ARRAY", items: masterSceneObjectSchema } }, required: ["storyboard"] };
+            const schema = { type: "OBJECT", properties: { storyboard: { type: "ARRAY", items: masterSceneObjectSchema } }, required: ["storyboard"] };
 
-            try {
-                const resultText = await callGeminiAPI(prompt, schema);
-                const parsedResult = JSON.parse(resultText);
-                storyboardData = parsedResult.storyboard;
-                renderStoryboard(storyboardData);
-            } catch (error) {
-                console.error("Storyboard generation error:", error);
-                storyboardOutput.innerHTML = `<p class="text-center text-red-400">Gagal membuat papan cerita: ${error.message}</p>`;
-                renderStoryboard([]); // PERUBAHAN: Menampilkan placeholder jika error
-            } finally { loader.classList.add('hidden'); }
-        };
+            try {
+                const resultText = await callGeminiAPI(prompt, schema);
+                const parsedResult = JSON.parse(resultText);
+                storyboardData = parsedResult.storyboard;
+                renderStoryboard(storyboardData);
+            } catch (error) {
+                console.error("Storyboard generation error:", error);
+                storyboardOutput.innerHTML = `<p class="text-center text-red-400">Gagal membuat papan cerita: ${error.message}</p>`;
+                renderStoryboard([]);
+            } finally { loader.classList.add('hidden'); }
+        };
 
-        const handleGenerateBlueprint = async (e) => {
-            const button = e.target.closest('.generate-blueprint-btn');
-            if (!button) return;
-            
-            const loaderEl = document.createElement('div');
-            loaderEl.className = 'inline-loader';
-            button.innerHTML = '';
-            button.appendChild(loaderEl);
-            button.disabled = true;
+        const handleGenerateBlueprint = async (e) => {
+            const button = e.target.closest('.generate-blueprint-btn');
+            if (!button) return;
+            
+            const loaderEl = document.createElement('div');
+            loaderEl.className = 'inline-loader';
+            button.innerHTML = '';
+            button.appendChild(loaderEl);
+            button.disabled = true;
 
-            const card = button.closest('.scene-card');
-            const sceneIndex = parseInt(card.dataset.index, 10);
-            const sceneData = storyboardData[sceneIndex];
-            const container = card.querySelector('.blueprint-prompt-container');
-            
-            const { style: styleKeywords, negative: negativeKeywords } = BLOGGER_STYLE_KEYWORDS; // DIUBAH
+            const card = button.closest('.scene-card');
+            const sceneIndex = parseInt(card.dataset.index, 10);
+            const sceneData = storyboardData[sceneIndex];
+            const container = card.querySelector('.blueprint-prompt-container');
+            
+            const { style: styleKeywords, negative: negativeKeywords } = BLOGGER_STYLE_KEYWORDS;
 
-            const characterInScene = characters.find(c => sceneData.scene_summary.toLowerCase().includes(c.brandName.toLowerCase()));
-            const characterDNA = characterInScene ? `The character MUST be consistent, ID: {ID: "${characterInScene.consistency_key}", Description: "${characterInScene.description}"}.` : '';
-            
-            const narrationScript = sceneData.sound_design?.narration_script || "No narration.";
-            const audioMixingGuide = sceneData.sound_design?.audio_mixing_guide || "No special instructions.";
+            const characterInScene = characters.find(c => sceneData.scene_summary.toLowerCase().includes(c.brandName.toLowerCase()));
+            const characterDNA = characterInScene ? `The character MUST be consistent, ID: {ID: "${characterInScene.consistency_key}", Description: "${characterInScene.description}"}.` : '';
+            
+            const narrationScript = sceneData.sound_design?.narration_script || "No narration.";
+            const audioMixingGuide = sceneData.sound_design?.audio_mixing_guide || "No special instructions.";
 
-            const narratorLanguage = narratorLanguageSetInput.options[narratorLanguageSetInput.selectedIndex].text;
-            const narratorVoiceText = narratorVoiceSetInput.options[narratorVoiceSetInput.selectedIndex].text;
+            const narratorLanguage = narratorLanguageSetInput.options[narratorLanguageSetInput.selectedIndex].text;
+            const narratorVoiceText = narratorVoiceSetInput.options[narratorVoiceSetInput.selectedIndex].text;
 
-            let prompt = `You are a world-class prompt engineer for advanced text-to-video AI models. Generate a detailed, structured video prompt in English. The output MUST follow the specified format.
+            let prompt = `You are a world-class prompt engineer for advanced text-to-video AI models. Generate a detailed, structured video prompt in English. The output MUST follow the specified format.
 
 **CHARACTER CONSISTENCY IS PARAMOUNT.** ${characterDNA}
 
@@ -941,37 +892,37 @@ INSTRUCTION: Narration style is ${narratorVoiceText}.
 NARRATION (spoken in ${narratorLanguage}): [${narrationScript}]
 
 MIXING: [${audioMixingGuide}]`;
-            try {
-                let result = await callGeminiAPI(prompt);
-                renderScenePrompt(result, container, 'Hasil: Prompt Detail (untuk Veo, Sora, dll)');
-            } catch (error) {
-                renderScenePrompt(`Error: ${error.message}`, container, 'Error');
-            } finally {
-                button.innerHTML = 'Prompt Detail';
-                button.disabled = false;
-            }
-        };
+            try {
+                let result = await callGeminiAPI(prompt);
+                renderScenePrompt(result, container, 'Hasil: Prompt Detail (untuk Veo, Sora, dll)');
+            } catch (error) {
+                renderScenePrompt(`Error: ${error.message}`, container, 'Error');
+            } finally {
+                button.innerHTML = 'Prompt Detail';
+                button.disabled = false;
+            }
+        };
 
-        const handleGenerateCanvaPrompt = async (e) => {
-            const button = e.target.closest('.generate-canva-prompt-btn');
-            if (!button) return;
-            const loaderEl = document.createElement('div');
-            loaderEl.className = 'inline-loader';
-            button.innerHTML = '';
-            button.appendChild(loaderEl);
-            button.disabled = true;
+        const handleGenerateCanvaPrompt = async (e) => {
+            const button = e.target.closest('.generate-canva-prompt-btn');
+            if (!button) return;
+            const loaderEl = document.createElement('div');
+            loaderEl.className = 'inline-loader';
+            button.innerHTML = '';
+            button.appendChild(loaderEl);
+            button.disabled = true;
 
-            const card = button.closest('.scene-card');
-            const sceneIndex = parseInt(card.dataset.index, 10);
-            const sceneData = storyboardData[sceneIndex];
-            const container = card.querySelector('.canva-prompt-container');
-            const videoStyleText = "Vlog perjalanan sinematik, host chibi 3D imut, pemandangan indah"; // DIUBAH
-            const narrationScript = sceneData.sound_design?.narration_script || "Tidak ada narasi.";
+            const card = button.closest('.scene-card');
+            const sceneIndex = parseInt(card.dataset.index, 10);
+            const sceneData = storyboardData[sceneIndex];
+            const container = card.querySelector('.canva-prompt-container');
+            const videoStyleText = "Vlog perjalanan sinematik, host chibi 3D imut, pemandangan indah";
+            const narrationScript = sceneData.sound_design?.narration_script || "Tidak ada narasi.";
 
-            const characterInScene = characters.find(c => sceneData.scene_summary.toLowerCase().includes(c.brandName.toLowerCase()));
-            const characterContext = characterInScene ? `Adegan ini menampilkan: "${characterInScene.name}". Deskripsi: "${characterInScene.description}". Pastikan prompt menyertakan ciri-ciri visual utama karakter.` : 'Tidak ada karakter spesifik.';
+            const characterInScene = characters.find(c => sceneData.scene_summary.toLowerCase().includes(c.brandName.toLowerCase()));
+            const characterContext = characterInScene ? `Adegan ini menampilkan: "${characterInScene.name}". Deskripsi: "${characterInScene.description}". Pastikan prompt menyertakan ciri-ciri visual utama karakter.` : 'Tidak ada karakter spesifik.';
 
-            const prompt = `Anda adalah penulis prompt ahli untuk Canva Magic Media. Buat satu prompt video singkat, padat, dan deskriptif dalam **Bahasa Indonesia**.
+            const prompt = `Anda adalah penulis prompt ahli untuk Canva Magic Media. Buat satu prompt video singkat, padat, dan deskriptif dalam **Bahasa Indonesia**.
 
 **KONTEKS ADEGAN:**
 * **Aksi Visual:** "${sceneData.scene_summary}"
@@ -979,48 +930,48 @@ MIXING: [${audioMixingGuide}]`;
 * **Gaya Visual:** "${videoStyleText}"
 
 **ATURAN:**
-1.  Gabungkan konteks menjadi satu gambaran visual.
-2.  Sebutkan subjek, ciri khas karakter, dan aksi penting.
-3.  Pastikan prompt diakhiri dengan gaya visual yang diminta.
-4.  Gunakan format kata kunci, 5-20 kata.
+1.  Gabungkan konteks menjadi satu gambaran visual.
+2.  Sebutkan subjek, ciri khas karakter, dan aksi penting.
+3.  Pastikan prompt diakhiri dengan gaya visual yang diminta.
+4.  Gunakan format kata kunci, 5-20 kata.
 
 Contoh: "Seorang host chibi 3D imut di pantai Bali, menunjuk ke pura, drone shot, gaya vlog sinematik."
 
 Buat promptnya sekarang.`;
-            try {
-                let result = await callGeminiAPI(prompt);
-                renderScenePrompt(result, container, 'Hasil: Prompt Canva AI');
-            } catch (error) {
-                renderScenePrompt(`Error: ${error.message}`, container, 'Error');
-            } finally {
-                button.innerHTML = 'Prompt Canva';
-                button.disabled = false;
-            }
-        };
-        
-        const handleGenerateTimecodeScript = async (e) => {
-            const button = e.target.closest('.generate-timecode-btn');
-            if (!button) return;
-            const loaderEl = document.createElement('div');
-            loaderEl.className = 'inline-loader';
-            button.innerHTML = '';
-            button.appendChild(loaderEl);
-            button.disabled = true;
+            try {
+                let result = await callGeminiAPI(prompt);
+                renderScenePrompt(result, container, 'Hasil: Prompt Canva AI');
+            } catch (error) {
+                renderScenePrompt(`Error: ${error.message}`, container, 'Error');
+            } finally {
+                button.innerHTML = 'Prompt Canva';
+                button.disabled = false;
+            }
+        };
+        
+        const handleGenerateTimecodeScript = async (e) => {
+            const button = e.target.closest('.generate-timecode-btn');
+            if (!button) return;
+            const loaderEl = document.createElement('div');
+            loaderEl.className = 'inline-loader';
+            button.innerHTML = '';
+            button.appendChild(loaderEl);
+            button.disabled = true;
 
-            const card = button.closest('.scene-card');
-            const sceneIndex = parseInt(card.dataset.index, 10);
-            const sceneData = storyboardData[sceneIndex];
-            const container = card.querySelector('.timecode-script-container');
-            const narratorLanguageValue = narratorLanguageSetInput.value;
-            const narratorLanguageText = narratorLanguageSetInput.options[narratorLanguageSetInput.selectedIndex].text;
-            const narratorVoiceValue = narratorVoiceSetInput.value;
-            const narratorVoiceText = narratorVoiceSetInput.options[narratorVoiceSetInput.selectedIndex].text;
-            const narrationScript = sceneData.sound_design?.narration_script || "";
+            const card = button.closest('.scene-card');
+            const sceneIndex = parseInt(card.dataset.index, 10);
+            const sceneData = storyboardData[sceneIndex];
+            const container = card.querySelector('.timecode-script-container');
+            const narratorLanguageValue = narratorLanguageSetInput.value;
+            const narratorLanguageText = narratorLanguageSetInput.options[narratorLanguageSetInput.selectedIndex].text;
+            const narratorVoiceValue = narratorVoiceSetInput.value;
+            const narratorVoiceText = narratorVoiceSetInput.options[narratorVoiceSetInput.selectedIndex].text;
+            const narrationScript = sceneData.sound_design?.narration_script || "";
 
-            const characterInScene = characters.find(c => sceneData.scene_summary.toLowerCase().includes(c.brandName.toLowerCase()));
-            const characterContext = characterInScene ? `This scene features: ${characterInScene.name} (ID: ${characterInScene.consistency_key}).` : 'No specific character.';
+            const characterInScene = characters.find(c => sceneData.scene_summary.toLowerCase().includes(c.brandName.toLowerCase()));
+            const characterContext = characterInScene ? `This scene features: ${characterInScene.name} (ID: ${characterInScene.consistency_key}).` : 'No specific character.';
 
-            const prompt = `You are a video editor's assistant. Create a JSON script with timecodes for this scene. Total duration ~8 seconds.
+            const prompt = `You are a video editor's assistant. Create a JSON script with timecodes for this scene. Total duration ~8 seconds.
 **RULES:**
 1. All string values (visual_description, camera_instruction, sfx) MUST be in English.
 2. The 'narration' field MUST use the EXACT text provided in "Narration Text to Use". DO NOT TRANSLATE IT.
@@ -1030,343 +981,335 @@ Buat promptnya sekarang.`;
 **Scene Data:** ${JSON.stringify(sceneData)}
 ${characterContext}
 **Visual Style:** Cinematic Travel Vlog with Cute 3D Chibi Host
-**Narration Text to Use:** "${narrationScript}"`; // DIUBAH
+**Narration Text to Use:** "${narrationScript}"`;
 
-            const schema = {
-                type: "OBJECT", properties: {
-                    total_duration_seconds: { type: "NUMBER" },
-                    timeline: { type: "ARRAY", items: { type: "OBJECT", properties: {
-                        timestamp: { type: "STRING" }, visual_description: { type: "STRING" },
-                        camera_instruction: { type: "STRING" }, sfx: { type: "STRING" }, narration: { type: "STRING" }
-                    }}}
-                }
-            };
-            try {
-                const resultText = await callGeminiAPI(prompt, schema);
-                const timelineData = JSON.parse(resultText);
-                let languageCode = 'en';
-                if (narratorLanguageValue === 'Indonesian') languageCode = 'id';
-                let gender = narratorVoiceValue.includes('wanita') || narratorVoiceValue.includes('perempuan') ? "Female" : "Male";
-                const voiceOverString = `${narratorLanguageText} - ${gender}`;
-                const finalJsonObject = { language: languageCode, voice_over: voiceOverString, ...timelineData };
-                renderScenePrompt(JSON.stringify(finalJsonObject, null, 2), container, 'Hasil: JSON Timecode Script');
-            } catch (error) {
-                renderScenePrompt(`Error: ${error.message}`, container, 'Error');
-            } finally {
-                button.innerHTML = 'JSON Timecode';
-                button.disabled = false;
-            }
-        };
+            const schema = {
+                type: "OBJECT", properties: {
+                    total_duration_seconds: { type: "NUMBER" },
+                    timeline: { type: "ARRAY", items: { type: "OBJECT", properties: {
+                        timestamp: { type: "STRING" }, visual_description: { type: "STRING" },
+                        camera_instruction: { type: "STRING" }, sfx: { type: "STRING" }, narration: { type: "STRING" }
+                    }}}
+                }
+            };
+            try {
+                const resultText = await callGeminiAPI(prompt, schema);
+                const timelineData = JSON.parse(resultText);
+                let languageCode = 'en';
+                if (narratorLanguageValue === 'Indonesian') languageCode = 'id';
+                let gender = narratorVoiceValue.includes('wanita') || narratorVoiceValue.includes('perempuan') ? "Female" : "Male";
+                const voiceOverString = `${narratorLanguageText} - ${gender}`;
+                const finalJsonObject = { language: languageCode, voice_over: voiceOverString, ...timelineData };
+                renderScenePrompt(JSON.stringify(finalJsonObject, null, 2), container, 'Hasil: JSON Timecode Script');
+            } catch (error) {
+                renderScenePrompt(`Error: ${error.message}`, container, 'Error');
+            } finally {
+                button.innerHTML = 'JSON Timecode';
+                button.disabled = false;
+            }
+        };
 
-        const renderScenePrompt = (promptText, container, title) => {
-            const promptId = `prompt-${Date.now()}`;
-            container.innerHTML = `<h5 class="text-md font-bold text-gray-300 mb-2">${title}</h5><div class="relative"><pre id="${promptId}" class="prompt-output p-3 rounded-lg">${promptText}</pre><div class="absolute top-2 right-2 flex gap-2"><button class="btn btn-copy text-xs font-semibold py-1 px-2 rounded-lg" data-copy-target-id="${promptId}"><span class="copy-text">Salin</span></button></div></div>`;
-        };
+        const renderScenePrompt = (promptText, container, title) => {
+            const promptId = `prompt-${Date.now()}`;
+            container.innerHTML = `<h5 class="text-md font-bold text-gray-300 mb-2">${title}</h5><div class="relative"><pre id="${promptId}" class="prompt-output p-3 rounded-lg">${promptText}</pre><div class="absolute top-2 right-2 flex gap-2"><button class="btn btn-copy text-xs font-semibold py-1 px-2 rounded-lg" data-copy-target-id="${promptId}"><span class="copy-text">Salin</span></button></div></div>`;
+        };
 
-        const handleDevelopCharacter = async () => {
-            const idea = charIdeaInput.value.trim();
-            if (!idea && !uploadedImageBase64) {
-                showNotification("Unggah gambar atau deskripsikan host Anda."); return; // Diubah
-            }
-            developCharBtn.disabled = true;
-            charLoader.classList.remove('hidden');
-            developCharBtnText.textContent = "Mendesain...";
-            const prompt = `You are a Character Designer. Analyze the image and/or user description: "${idea}". Create a "Model Sheet" in JSON for a travel vlog host.
+        const handleDevelopCharacter = async () => {
+            const idea = charIdeaInput.value.trim();
+            if (!idea && !uploadedImageBase64) {
+                showNotification("Unggah gambar atau deskripsikan host Anda."); return;
+            }
+            developCharBtn.disabled = true;
+            charLoader.classList.remove('hidden');
+            developCharBtnText.textContent = "Mendesain...";
+            const prompt = `You are a Character Designer. Analyze the image and/or user description: "${idea}". Create a "Model Sheet" in JSON for a travel vlog host.
 **RULES:**
 1. The character's visual design **MUST** be a cute, adorable, **'3D animated chibi style'** suitable for a travel vlog.
 2. The clothing MUST be travel-related (e.g., casual, backpack, hat, camera), NOT fantasy armor.
 3. 'brand_name' and 'model_name' must be simple and in Indonesian (e.g., "Rian", "Host Petualang").
 4. 'consistency_key' must be in English (e.g., "cute_chibi_host_rian_v1").
-5. 'design_language' (deskripsi desain) must be in Indonesian.`; // DIUBAH TOTAL
-            const schema = {
-                type: "OBJECT", properties: {
-                    brand_name: { type: "STRING" }, model_name: { type: "STRING" },
-                    design_language: { type: "STRING" }, consistency_key: { type: "STRING" }
-                }, required: ["brand_name", "model_name", "design_language", "consistency_key"]
-            };
-            try {
-                const resultText = await callGeminiAPI(prompt, schema, 'gemini-2.5-flash-preview-05-20', uploadedImageBase64, uploadedImageType);
-                tempDevelopedChar = JSON.parse(resultText);
-                charBrandNameInput.value = tempDevelopedChar.brand_name;
-                charModelNameInput.value = tempDevelopedChar.model_name;
-                charConsistencyKeyInput.value = tempDevelopedChar.consistency_key;
-                charDesignLanguageInput.value = tempDevelopedChar.design_language;
-                switchCharacterModalStep(2);
-            } catch (error) {
-                showNotification(`Gagal mendesain model: ${error.message}`);
-                developCharBtnText.textContent = "✨ Desain Model Tokoh";
-            } finally {
-                developCharBtn.disabled = false;
-                charLoader.classList.add('hidden');
-            }
-        };
+5. 'design_language' (deskripsi desain) must be in Indonesian.`;
+            const schema = {
+                type: "OBJECT", properties: {
+                    brand_name: { type: "STRING" }, model_name: { type: "STRING" },
+                    design_language: { type: "STRING" }, consistency_key: { type: "STRING" }
+                }, required: ["brand_name", "model_name", "design_language", "consistency_key"]
+            };
+            try {
+                const resultText = await callGeminiAPI(prompt, schema, 'gemini-2.5-flash-preview-05-20', uploadedImageBase64, uploadedImageType);
+                tempDevelopedChar = JSON.parse(resultText);
+                charBrandNameInput.value = tempDevelopedChar.brand_name;
+                charModelNameInput.value = tempDevelopedChar.model_name;
+                charConsistencyKeyInput.value = tempDevelopedChar.consistency_key;
+                charDesignLanguageInput.value = tempDevelopedChar.design_language;
+                switchCharacterModalStep(2);
+            } catch (error) {
+                showNotification(`Gagal mendesain model: ${error.message}`);
+                developCharBtnText.textContent = "✨ Desain Model Tokoh";
+            } finally {
+                developCharBtn.disabled = false;
+                charLoader.classList.add('hidden');
+            }
+        };
 
-        const handleSaveCharacter = () => {
-            const brand = charBrandNameInput.value.trim();
-            const model = charModelNameInput.value.trim();
-            const consistencyKey = charConsistencyKeyInput.value.trim();
-            if (!brand || !model || !consistencyKey) { showNotification('Nama, Peran, dan ID wajib diisi.'); return; }
-            const characterData = {
-                name: `${brand} (${model})`, brandName: brand, modelName: model, description: charDesignLanguageInput.value.trim(),
-                consistency_key: consistencyKey, actionDNA: Array.from(selectedActionDna.querySelectorAll('.action-dna-tag')).map(tag => tag.textContent.replace(' ×', ''))
-            };
-            if (isEditingCharacter) {
-                characters[editingCharacterIndex] = characterData;
-                showNotification(`Host "${characterData.name}" diperbarui!`); // Diubah
-            } else {
-                characters.push(characterData);
-                showNotification(`Host "${characterData.name}" disimpan!`); // Diubah
-            }
-            renderCharacters();
-            characterModal.classList.remove('visible');
-        };
+        const handleSaveCharacter = () => {
+            const brand = charBrandNameInput.value.trim();
+            const model = charModelNameInput.value.trim();
+            const consistencyKey = charConsistencyKeyInput.value.trim();
+            if (!brand || !model || !consistencyKey) { showNotification('Nama, Peran, dan ID wajib diisi.'); return; }
+            const characterData = {
+                name: `${brand} (${model})`, brandName: brand, modelName: model, description: charDesignLanguageInput.value.trim(),
+                consistency_key: consistencyKey, actionDNA: Array.from(selectedActionDna.querySelectorAll('.action-dna-tag')).map(tag => tag.textContent.replace(' ×', ''))
+            };
+            if (isEditingCharacter) {
+                characters[editingCharacterIndex] = characterData;
+                showNotification(`Host "${characterData.name}" diperbarui!`);
+            } else {
+                characters.push(characterData);
+                showNotification(`Host "${characterData.name}" disimpan!`);
+            }
+            renderCharacters();
+            characterModal.classList.remove('visible');
+        };
 
-        const handleCharacterAction = async (e) => {
-            const removeBtn = e.target.closest('.remove-char-btn');
-            if (removeBtn) {
-                const index = parseInt(removeBtn.dataset.index, 10);
-                const removedCharName = characters[index].name;
-                if (await showConfirmation("Hapus Host?", `Yakin mau hapus "${removedCharName}"?`)) { // Diubah
-                    characters.splice(index, 1); 
-                    renderCharacters();
-                    showNotification(`"${removedCharName}" berhasil dihapus.`);
-                }
-            }
-            const editBtn = e.target.closest('.edit-char-btn');
-            if (editBtn) {
-                const index = parseInt(editBtn.dataset.index, 10);
-                const charToEdit = characters[index];
-                isEditingCharacter = true; editingCharacterIndex = index; tempDevelopedChar = charToEdit;
-                characterModalTitle.textContent = "Sunting Host"; addCharBtn.textContent = "✅ Perbarui Host"; // Diubah
-                charBrandNameInput.value = charToEdit.brandName; charModelNameInput.value = charToEdit.modelName;
-                charConsistencyKeyInput.value = charToEdit.consistency_key; charDesignLanguageInput.value = charToEdit.description;
-                selectedActionDna.innerHTML = ''; charToEdit.actionDNA.forEach(dna => addActionDnaTag(dna, false));
-                characterModal.classList.add('visible'); switchCharacterModalStep(2);
-            }
-        };
-        
-        // --- EVENT LISTENERS & INITIALIZATION ---
-        const resetApplication = () => {
-            storyboardData = []; state = { ...defaultState };
-            projectTitleInput.value = state.projectTitle;
-            scenarioInput.value = state.scenario; 
-            sceneCountInput.value = state.sceneCount;
-            locationSetInput.value = state.locationSet; customLocationInput.value = ''; customLocationInput.classList.add('hidden');
-            cameraStyleSetInput.value = state.cameraStyleSet;
-            narratorVoiceSetInput.value = state.narratorVoiceSet;
-            switchTab(tabNaskah, naskahView);
-            renderStoryboard(storyboardData); // PERUBAHAN: Memanggil renderStoryboard untuk reset
-            updateUIState(); window.scrollTo({ top: 0, behavior: 'smooth' }); showNotification("Proyek baru dimulai.");
-            renderCharacters(); // Tambahkan ini untuk merender ulang daftar host (yang mungkin kosong)
-        };
+        const handleCharacterAction = async (e) => {
+            const removeBtn = e.target.closest('.remove-char-btn');
+            if (removeBtn) {
+                const index = parseInt(removeBtn.dataset.index, 10);
+                const removedCharName = characters[index].name;
+                if (await showConfirmation("Hapus Host?", `Yakin mau hapus "${removedCharName}"?`)) {
+                    characters.splice(index, 1); 
+                    renderCharacters();
+                    showNotification(`"${removedCharName}" berhasil dihapus.`);
+                }
+            }
+            const editBtn = e.target.closest('.edit-char-btn');
+            if (editBtn) {
+                const index = parseInt(editBtn.dataset.index, 10);
+                const charToEdit = characters[index];
+                isEditingCharacter = true; editingCharacterIndex = index; tempDevelopedChar = charToEdit;
+                characterModalTitle.textContent = "Sunting Host"; addCharBtn.textContent = "✅ Perbarui Host";
+                charBrandNameInput.value = charToEdit.brandName; charModelNameInput.value = charToEdit.modelName;
+                charConsistencyKeyInput.value = charToEdit.consistency_key; charDesignLanguageInput.value = charToEdit.description;
+                selectedActionDna.innerHTML = ''; charToEdit.actionDNA.forEach(dna => addActionDnaTag(dna, false));
+                characterModal.classList.add('visible'); switchCharacterModalStep(2);
+            }
+        };
+        
+        // --- EVENT LISTENERS & INITIALIZATION ---
+        const resetApplication = () => {
+            storyboardData = []; state = { ...defaultState };
+            projectTitleInput.value = state.projectTitle;
+            scenarioInput.value = state.scenario; 
+            sceneCountInput.value = state.sceneCount;
+            locationSetInput.value = state.locationSet; customLocationInput.value = ''; customLocationInput.classList.add('hidden');
+            cameraStyleSetInput.value = state.cameraStyleSet;
+            narratorVoiceSetInput.value = state.narratorVoiceSet;
+            switchTab(tabNaskah, naskahView);
+            renderStoryboard(storyboardData);
+            updateUIState(); window.scrollTo({ top: 0, behavior: 'smooth' }); showNotification("Proyek baru dimulai.");
+            renderCharacters();
+        };
 
-        const switchTab = (activeTab, activeView) => {
-            [tabNaskah, tabStoryboard].forEach(t => t.classList.remove('active'));
-            [naskahView, storyboardView].forEach(v => v.classList.add('hidden'));
-            activeTab.classList.add('active'); activeView.classList.remove('hidden');
-        };
+        const switchTab = (activeTab, activeView) => {
+            [tabNaskah, tabStoryboard].forEach(t => t.classList.remove('active'));
+            [naskahView, storyboardView].forEach(v => v.classList.add('hidden'));
+            activeTab.classList.add('active'); activeView.classList.remove('hidden');
+        };
 
-        const switchCharacterModalStep = async (step) => {
-            currentCharacterModalStep = step;
-            [charStep1, charStep2, charStep3].forEach(s => s.classList.add('hidden'));
-            charPrevBtn.classList.add('hidden'); charNextBtn.classList.add('hidden'); addCharBtn.classList.add('hidden'); developCharBtn.classList.add('hidden');
-            if (step === 1) { charStep1.classList.remove('hidden'); developCharBtn.classList.remove('hidden'); }
-            else if (step === 2) { charStep2.classList.remove('hidden'); charPrevBtn.classList.remove('hidden'); charNextBtn.classList.remove('hidden'); }
-            else if (step === 3) { charStep3.classList.remove('hidden'); charPrevBtn.classList.remove('hidden'); addCharBtn.classList.remove('hidden'); if (!isEditingCharacter) await handleGenerateActionDNA(); }
-        };
-        
-        const resetCharModal = () => {
-            isEditingCharacter = false; editingCharacterIndex = -1; charIdeaInput.value = ''; tempDevelopedChar = null; uploadedImageBase64 = null; uploadedImageType = null;
-            charImagePreview.innerHTML = '<span>Pratinjau Gambar</span>'; charImageInput.value = '';
-            characterModalTitle.textContent = "Studio Host"; addCharBtn.textContent = "✅ Simpan Host"; // Diubah
-            charBrandNameInput.value = ''; charModelNameInput.value = ''; charConsistencyKeyInput.value = ''; charDesignLanguageInput.value = '';
-            actionDnaSuggestions.innerHTML = ''; selectedActionDna.innerHTML = ''; customActionDnaInput.value = '';
-            switchCharacterModalStep(1);
-        };
-        
-        const handleImageUpload = (event) => {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                charImagePreview.innerHTML = `<img src="${e.target.result}" alt="Pratinjau Gambar" class="rounded-lg object-contain h-32">`;
-                uploadedImageType = file.type; uploadedImageBase64 = e.target.result.split(',')[1];
-            };
-            reader.readAsDataURL(file);
-        };
+        const switchCharacterModalStep = async (step) => {
+            currentCharacterModalStep = step;
+            [charStep1, charStep2, charStep3].forEach(s => s.classList.add('hidden'));
+            charPrevBtn.classList.add('hidden'); charNextBtn.classList.add('hidden'); addCharBtn.classList.add('hidden'); developCharBtn.classList.add('hidden');
+            if (step === 1) { charStep1.classList.remove('hidden'); developCharBtn.classList.remove('hidden'); }
+            else if (step === 2) { charStep2.classList.remove('hidden'); charPrevBtn.classList.remove('hidden'); charNextBtn.classList.remove('hidden'); }
+            else if (step === 3) { charStep3.classList.remove('hidden'); charPrevBtn.classList.remove('hidden'); addCharBtn.classList.remove('hidden'); if (!isEditingCharacter) await handleGenerateActionDNA(); }
+        };
+        
+        const resetCharModal = () => {
+            isEditingCharacter = false; editingCharacterIndex = -1; charIdeaInput.value = ''; tempDevelopedChar = null; uploadedImageBase64 = null; uploadedImageType = null;
+            charImagePreview.innerHTML = '<span>Pratinjau Gambar</span>'; charImageInput.value = '';
+            characterModalTitle.textContent = "Studio Host"; addCharBtn.textContent = "✅ Simpan Host";
+            charBrandNameInput.value = ''; charModelNameInput.value = ''; charConsistencyKeyInput.value = ''; charDesignLanguageInput.value = '';
+            actionDnaSuggestions.innerHTML = ''; selectedActionDna.innerHTML = ''; customActionDnaInput.value = '';
+            switchCharacterModalStep(1);
+        };
+        
+        const handleImageUpload = (event) => {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                charImagePreview.innerHTML = `<img src="${e.target.result}" alt="Pratinjau Gambar" class="rounded-lg object-contain h-32">`;
+                uploadedImageType = file.type; uploadedImageBase64 = e.target.result.split(',')[1];
+            };
+            reader.readAsDataURL(file);
+        };
 
-        const addActionDnaTag = (tagText, fromCustomInput = true) => {
-            if (!tagText) return;
-            const existingTags = Array.from(selectedActionDna.querySelectorAll('.action-dna-tag')).map(t => t.textContent.replace(' ×', ''));
-            if (existingTags.includes(tagText)) { if(fromCustomInput) showNotification("Aksi itu sudah ada."); return; }
-            const tagEl = document.createElement('span');
-            tagEl.className = 'action-dna-tag selected bg-cyan-500 text-white text-sm font-medium px-3 py-1 rounded-full flex items-center gap-2';
-            tagEl.textContent = tagText;
-            const removeBtn = document.createElement('button'); removeBtn.innerHTML = '&times;'; removeBtn.className = 'font-bold ml-1';
-            removeBtn.onclick = () => tagEl.remove();
-            tagEl.appendChild(removeBtn); selectedActionDna.appendChild(tagEl);
-        };
-        
-        const renderActionDnaSuggestions = (suggestions) => {
-            actionDnaSuggestions.innerHTML = '';
-            suggestions.forEach(tagText => {
-                const tagBtn = document.createElement('button');
-                tagBtn.className = 'action-dna-tag btn bg-gray-700 text-gray-300 border border-gray-600 text-sm font-medium px-3 py-1 rounded-full';
-                tagBtn.textContent = tagText;
-                tagBtn.onclick = () => { addActionDnaTag(tagText, false); tagBtn.disabled = true; tagBtn.classList.add('opacity-50'); };
-                actionDnaSuggestions.appendChild(tagBtn);
-            });
-        };
+        const addActionDnaTag = (tagText, fromCustomInput = true) => {
+            if (!tagText) return;
+            const existingTags = Array.from(selectedActionDna.querySelectorAll('.action-dna-tag')).map(t => t.textContent.replace(' ×', ''));
+            if (existingTags.includes(tagText)) { if(fromCustomInput) showNotification("Aksi itu sudah ada."); return; }
+            const tagEl = document.createElement('span');
+            tagEl.className = 'action-dna-tag selected bg-cyan-500 text-white text-sm font-medium px-3 py-1 rounded-full flex items-center gap-2';
+            tagEl.textContent = tagText;
+            const removeBtn = document.createElement('button'); removeBtn.innerHTML = '&times;'; removeBtn.className = 'font-bold ml-1';
+            removeBtn.onclick = () => tagEl.remove();
+            tagEl.appendChild(removeBtn); selectedActionDna.appendChild(tagEl);
+        };
+        
+        const renderActionDnaSuggestions = (suggestions) => {
+            actionDnaSuggestions.innerHTML = '';
+            suggestions.forEach(tagText => {
+                const tagBtn = document.createElement('button');
+                tagBtn.className = 'action-dna-tag btn bg-gray-700 text-gray-300 border border-gray-600 text-sm font-medium px-3 py-1 rounded-full';
+                tagBtn.textContent = tagText;
+                tagBtn.onclick = () => { addActionDnaTag(tagText, false); tagBtn.disabled = true; tagBtn.classList.add('opacity-50'); };
+                actionDnaSuggestions.appendChild(tagBtn);
+            });
+        };
 
-        const handleGenerateActionDNA = async () => {
-            if (!tempDevelopedChar) return;
-            actionDnaSuggestions.innerHTML = '<div class="inline-loader"></div>';
-            const prompt = `Berikan 5-7 kata kunci "DNA Aksi" (dalam Bahasa Indonesia) untuk karakter host vlog ini: ${JSON.stringify(tempDevelopedChar)}. Aksi harus relevan untuk konteks vlog perjalanan. Hasilnya berupa JSON.`;
-            const schema = { type: "OBJECT", properties: { action_dna: { type: "ARRAY", items: { type: "STRING" } } }, required: ["action_dna"] };
-            try {
-                const resultText = await callGeminiAPI(prompt, schema);
-                const parsedResult = JSON.parse(resultText);
-                renderActionDnaSuggestions(parsedResult.action_dna);
-            } catch (error) { actionDnaSuggestions.innerHTML = `<p class="text-xs text-red-400">Gagal memuat saran.</p>`; }
-        };
-        
-        const handleCopyText = (e) => {
-            const button = e.target.closest('[data-copy-target-id]'); if (!button) return;
-            const targetId = button.dataset.copyTargetId; const targetElement = document.getElementById(targetId);
-            if (targetElement) {
-                const textToCopy = targetElement.innerText;
-                const textArea = document.createElement('textarea');
-                textArea.value = textToCopy; textArea.style.position = 'fixed'; document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy'); showNotification("Berhasil disalin!");
-                    const copyTextEl = button.querySelector('.copy-text'); if (copyTextEl) { const o = copyTextEl.textContent; copyTextEl.textContent = 'Tersalin!'; setTimeout(() => { copyTextEl.textContent = o; }, 2000); }
-                } catch (err) { showNotification("Gagal menyalin."); }
-                document.body.removeChild(textArea);
-            }
-        };
+        const handleGenerateActionDNA = async () => {
+            if (!tempDevelopedChar) return;
+            actionDnaSuggestions.innerHTML = '<div class="inline-loader"></div>';
+            const prompt = `Berikan 5-7 kata kunci "DNA Aksi" (dalam Bahasa Indonesia) untuk karakter host vlog ini: ${JSON.stringify(tempDevelopedChar)}. Aksi harus relevan untuk konteks vlog perjalanan. Hasilnya berupa JSON.`;
+            const schema = { type: "OBJECT", properties: { action_dna: { type: "ARRAY", items: { type: "STRING" } } }, required: ["action_dna"] };
+            try {
+                const resultText = await callGeminiAPI(prompt, schema);
+                const parsedResult = JSON.parse(resultText);
+                renderActionDnaSuggestions(parsedResult.action_dna);
+            } catch (error) { actionDnaSuggestions.innerHTML = `<p class="text-xs text-red-400">Gagal memuat saran.</p>`; }
+        };
+        
+        const handleCopyText = (e) => {
+            const button = e.target.closest('[data-copy-target-id]'); if (!button) return;
+            const targetId = button.dataset.copyTargetId; const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                const textToCopy = targetElement.innerText;
+                const textArea = document.createElement('textarea');
+                textArea.value = textToCopy; textArea.style.position = 'fixed'; document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy'); showNotification("Berhasil disalin!");
+                    const copyTextEl = button.querySelector('.copy-text'); if (copyTextEl) { const o = copyTextEl.textContent; copyTextEl.textContent = 'Tersalin!'; setTimeout(() => { copyTextEl.textContent = o; }, 2000); }
+                } catch (err) { showNotification("Gagal menyalin."); }
+                document.body.removeChild(textArea);
+            }
+        };
 
-        const handleAddTemplateCharacter = (e) => {
-            const addBtn = e.target.closest('.add-template-char-btn');
-            if (addBtn) {
-                const card = addBtn.closest('[data-index]');
-                const index = parseInt(card.dataset.index, 10);
-                const templateChar = templateCharacters[index];
-                
-                const alreadyExists = characters.some(c => c.name === templateChar.name);
-                if (alreadyExists) {
-                    showNotification(`Host "${templateChar.name}" sudah ada.`); // Diubah
-                    return;
-                }
-                
-                characters.push({ ...templateChar });
-                renderCharacters();
-                showNotification(`Host "${templateChar.name}" berhasil ditambahkan!`); // Diubah
-            }
-        };
+        const handleAddTemplateCharacter = (e) => {
+            const addBtn = e.target.closest('.add-template-char-btn');
+            if (addBtn) {
+                const card = addBtn.closest('[data-index]');
+                const index = parseInt(card.dataset.index, 10);
+                const templateChar = templateCharacters[index];
+                
+                const alreadyExists = characters.some(c => c.name === templateChar.name);
+                if (alreadyExists) {
+                    showNotification(`Host "${templateChar.name}" sudah ada.`);
+                    return;
+                }
+                
+                characters.push({ ...templateChar });
+                renderCharacters();
+                showNotification(`Host "${templateChar.name}" berhasil ditambahkan!`);
+            }
+        };
 
-        const handleExportToJson = () => {
-            if (!state.projectTitle && characters.length === 0 && storyboardData.length === 0) {
-                showNotification("Tidak ada data untuk diekspor. Mulai proyek terlebih dahulu.");
-                return;
-            }
-            const title = state.projectTitle.trim() || "Proyek_WanderScript_Tanpa_Judul"; // Diubah
-            const projectData = {
-                version: "WanderScript-1.0", // Diubah
-                state: state,
-                characters: characters,
-                storyboardData: storyboardData,
-            };
-            const jsonString = JSON.stringify(projectData, null, 2);
-            const blob = new Blob([jsonString], { type: "application/json" });
-            saveAs(blob, `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`);
-            showNotification("Proyek berhasil diekspor ke JSON!");
-        };
+        const handleExportToJson = () => {
+            if (!state.projectTitle && characters.length === 0 && storyboardData.length === 0) {
+                showNotification("Tidak ada data untuk diekspor. Mulai proyek terlebih dahulu.");
+                return;
+            }
+            const title = state.projectTitle.trim() || "Proyek_WanderScript_Tanpa_Judul";
+            const projectData = {
+                version: "WanderScript-1.0",
+                state: state,
+                characters: characters,
+                storyboardData: storyboardData,
+            };
+            const jsonString = JSON.stringify(projectData, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            saveAs(blob, `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`);
+            showNotification("Proyek berhasil diekspor ke JSON!");
+        };
 
-        // --- INITIALIZATION ---
-        const init = () => {
-            userApiKey = localStorage.getItem('wanderScriptApiKey') || ''; // Diubah
-            apiKeyInput.value = userApiKey;
-            resetApplication();
-            renderTemplateCharacters();
-            updateNarratorLockDisplay();
-            
-            const togglePasswordBtn = document.getElementById('toggle-password');
-            const eyeIconPassword = document.getElementById('eye-icon-password');
-            const eyeSlashIconPassword = document.getElementById('eye-slash-icon-password');
-            togglePasswordBtn.addEventListener('click', () => {
-                if (passwordInput.type === 'password') { passwordInput.type = 'text'; eyeIconPassword.classList.add('hidden'); eyeSlashIconPassword.classList.remove('hidden'); } 
-                else { passwordInput.type = 'password'; eyeIconPassword.classList.remove('hidden'); eyeSlashIconPassword.classList.add('hidden'); }
-            });
+        // --- INITIALIZATION ---
+        const init = () => {
+            userApiKey = localStorage.getItem('wanderScriptApiKey') || '';
+            apiKeyInput.value = userApiKey;
+            resetApplication();
+            renderTemplateCharacters();
+            updateNarratorLockDisplay();
+            
+            const toggleApiKeyBtn = document.getElementById('toggle-api-key');
+            const eyeIconApiKey = document.getElementById('eye-icon-apikey');
+            const eyeSlashIconApiKey = document.getElementById('eye-slash-icon-apikey');
+            toggleApiKeyBtn.addEventListener('click', () => {
+                if (apiKeyInput.type === 'password') { apiKeyInput.type = 'text'; eyeIconApiKey.classList.add('hidden'); eyeSlashIconApiKey.classList.remove('hidden'); } 
+                else { apiKeyInput.type = 'password'; eyeIconApiKey.classList.remove('hidden'); eyeSlashIconApiKey.classList.add('hidden'); }
+            });
 
-            const toggleApiKeyBtn = document.getElementById('toggle-api-key');
-            const eyeIconApiKey = document.getElementById('eye-icon-apikey');
-            const eyeSlashIconApiKey = document.getElementById('eye-slash-icon-apikey');
-            toggleApiKeyBtn.addEventListener('click', () => {
-                if (apiKeyInput.type === 'password') { apiKeyInput.type = 'text'; eyeIconApiKey.classList.add('hidden'); eyeSlashIconApiKey.classList.remove('hidden'); } 
-                else { apiKeyInput.type = 'password'; eyeIconApiKey.classList.remove('hidden'); eyeSlashIconApiKey.classList.add('hidden'); }
-            });
-
-            uploadImageBtn.addEventListener('click', () => charImageInput.click());
-            charImageInput.addEventListener('change', handleImageUpload);
-            openAddCharModalBtn.addEventListener('click', () => { resetCharModal(); characterModal.classList.add('visible'); });
-            closeCharModalBtn.addEventListener('click', () => characterModal.classList.remove('visible'));
-            developCharBtn.addEventListener('click', handleDevelopCharacter);
-            addCharBtn.addEventListener('click', handleSaveCharacter);
-            charNextBtn.addEventListener('click', () => switchCharacterModalStep(3));
-            charPrevBtn.addEventListener('click', () => switchCharacterModalStep(currentCharacterModalStep - 1));
-            tabNaskah.addEventListener('click', () => switchTab(tabNaskah, naskahView));
-            tabStoryboard.addEventListener('click', () => switchTab(tabStoryboard, storyboardView));
-            analyzeTextBtn.addEventListener('click', handleAnalyzeText);
-            generateScriptBtn.addEventListener('click', handleGenerateScript);
-            generateBtn.addEventListener('click', handleGenerateStoryboard);
-            resetProjectBtn.addEventListener('click', () => { showConfirmation("Mulai Proyek Baru?", "Progress akan hilang. Yakin?").then(p => { if (p) resetApplication(); }); });
-            charListContainer.addEventListener('click', handleCharacterAction);
-            templateCharList.addEventListener('click', handleAddTemplateCharacter);
-            openSettingsBtn.addEventListener('click', () => settingsModal.classList.add('visible'));
-            closeSettingsModalBtn.addEventListener('click', () => settingsModal.classList.remove('visible'));
-            saveApiKeyBtn.addEventListener('click', () => { userApiKey = apiKeyInput.value.trim(); localStorage.setItem('wanderScriptApiKey', userApiKey); showNotification("API Key disimpan."); settingsModal.classList.remove('visible'); }); // Diubah
-            clearApiKeyBtn.addEventListener('click', () => { userApiKey = ''; apiKeyInput.value = ''; localStorage.removeItem('wanderScriptApiKey'); showNotification("API Key dihapus."); }); // Diubah
-            
-            projectTitleInput.addEventListener('input', (e) => {
-                state.projectTitle = e.target.value;
-                generateScriptBtn.classList.toggle('hidden', e.target.value.trim() === '');
-            });
-            scenarioInput.addEventListener('input', (e) => { state.scenario = e.target.value; updateUIState(); });
-            sceneCountInput.addEventListener('input', (e) => { state.sceneCount = parseInt(e.target.value, 10); });
-            locationSetInput.addEventListener('change', (e) => { state.locationSet = e.target.value; customLocationInput.classList.toggle('hidden', e.target.value !== 'custom_location'); });
-            narratorLanguageSetInput.addEventListener('change', (e) => { customNarratorLanguageInput.classList.toggle('hidden', e.target.value !== 'custom_language'); });
-            narratorVoiceSetInput.addEventListener('change', (e) => { state.narratorVoiceSet = e.target.value; updateNarratorLockDisplay(); });
-            cameraStyleSetInput.addEventListener('change', (e) => { state.cameraStyleSet = e.target.value; });
-            
-            addCustomDnaBtn.addEventListener('click', () => { addActionDnaTag(customActionDnaInput.value.trim()); customActionDnaInput.value = ''; });
-            customActionDnaInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addActionDnaTag(customActionDnaInput.value.trim()); customActionDnaInput.value = ''; } });
-            document.body.addEventListener('click', (e) => {
-                if (e.target.closest('[data-copy-target-id]')) handleCopyText(e);
-                if (e.target.closest('.generate-timecode-btn')) handleGenerateTimecodeScript(e);
-                if (e.target.closest('.generate-blueprint-btn')) handleGenerateBlueprint(e);
-                if (e.target.closest('.generate-canva-prompt-btn')) handleGenerateCanvaPrompt(e);
-            });
-            
-            exportProjectBtn.addEventListener('click', handleExportToJson);
-            importProjectBtn.addEventListener('click', () => { showNotification("Fitur ini akan mengimpor file JSON (bukan Word) untuk melanjutkan proyek.", 5000); importFileInput.click(); });
-            importFileInput.addEventListener('change', (event) => {
-                const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const projectData = JSON.parse(e.target.result);
-                        if (projectData.characters && projectData.state) {
-                            characters = projectData.characters || []; state = projectData.state || { ...defaultState }; storyboardData = projectData.storyboardData || [];
-                            projectTitleInput.value = state.projectTitle; scenarioInput.value = state.scenario; sceneCountInput.value = state.sceneCount; locationSetInput.value = state.locationSet;
-                            cameraStyleSetInput.value = state.cameraStyleSet; narratorVoiceSetInput.value = state.narratorVoiceSet;
-                            renderCharacters(); renderStoryboard(storyboardData); updateUIState(); showNotification("Proyek berhasil diimpor!");
-                        } else { showNotification("File proyek tidak valid."); }
-                    } catch (err) { showNotification("Gagal membaca file: " + err.message); }
-                };
-                reader.readAsText(file); importFileInput.value = '';
-            });
-        };
-        init();
-    });
-    </script>
+            uploadImageBtn.addEventListener('click', () => charImageInput.click());
+            charImageInput.addEventListener('change', handleImageUpload);
+            openAddCharModalBtn.addEventListener('click', () => { resetCharModal(); characterModal.classList.add('visible'); });
+            closeCharModalBtn.addEventListener('click', () => characterModal.classList.remove('visible'));
+            developCharBtn.addEventListener('click', handleDevelopCharacter);
+            addCharBtn.addEventListener('click', handleSaveCharacter);
+            charNextBtn.addEventListener('click', () => switchCharacterModalStep(3));
+            charPrevBtn.addEventListener('click', () => switchCharacterModalStep(currentCharacterModalStep - 1));
+            tabNaskah.addEventListener('click', () => switchTab(tabNaskah, naskahView));
+            tabStoryboard.addEventListener('click', () => switchTab(tabStoryboard, storyboardView));
+            analyzeTextBtn.addEventListener('click', handleAnalyzeText);
+            generateScriptBtn.addEventListener('click', handleGenerateScript);
+            generateBtn.addEventListener('click', handleGenerateStoryboard);
+            resetProjectBtn.addEventListener('click', () => { showConfirmation("Mulai Proyek Baru?", "Progress akan hilang. Yakin?").then(p => { if (p) resetApplication(); }); });
+            charListContainer.addEventListener('click', handleCharacterAction);
+            templateCharList.addEventListener('click', handleAddTemplateCharacter);
+            openSettingsBtn.addEventListener('click', () => settingsModal.classList.add('visible'));
+            closeSettingsModalBtn.addEventListener('click', () => settingsModal.classList.remove('visible'));
+            saveApiKeyBtn.addEventListener('click', () => { userApiKey = apiKeyInput.value.trim(); localStorage.setItem('wanderScriptApiKey', userApiKey); showNotification("API Key disimpan."); settingsModal.classList.remove('visible'); });
+            clearApiKeyBtn.addEventListener('click', () => { userApiKey = ''; apiKeyInput.value = ''; localStorage.removeItem('wanderScriptApiKey'); showNotification("API Key dihapus."); });
+            
+            projectTitleInput.addEventListener('input', (e) => {
+                state.projectTitle = e.target.value;
+                generateScriptBtn.classList.toggle('hidden', e.target.value.trim() === '');
+            });
+            scenarioInput.addEventListener('input', (e) => { state.scenario = e.target.value; updateUIState(); });
+            sceneCountInput.addEventListener('input', (e) => { state.sceneCount = parseInt(e.target.value, 10); });
+            locationSetInput.addEventListener('change', (e) => { state.locationSet = e.target.value; customLocationInput.classList.toggle('hidden', e.target.value !== 'custom_location'); });
+            narratorLanguageSetInput.addEventListener('change', (e) => { customNarratorLanguageInput.classList.toggle('hidden', e.target.value !== 'custom_language'); });
+            narratorVoiceSetInput.addEventListener('change', (e) => { state.narratorVoiceSet = e.target.value; updateNarratorLockDisplay(); });
+            cameraStyleSetInput.addEventListener('change', (e) => { state.cameraStyleSet = e.target.value; });
+            
+            addCustomDnaBtn.addEventListener('click', () => { addActionDnaTag(customActionDnaInput.value.trim()); customActionDnaInput.value = ''; });
+            customActionDnaInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addActionDnaTag(customActionDnaInput.value.trim()); customActionDnaInput.value = ''; } });
+            document.body.addEventListener('click', (e) => {
+                if (e.target.closest('[data-copy-target-id]')) handleCopyText(e);
+                if (e.target.closest('.generate-timecode-btn')) handleGenerateTimecodeScript(e);
+                if (e.target.closest('.generate-blueprint-btn')) handleGenerateBlueprint(e);
+                if (e.target.closest('.generate-canva-prompt-btn')) handleGenerateCanvaPrompt(e);
+            });
+            
+            exportProjectBtn.addEventListener('click', handleExportToJson);
+            importProjectBtn.addEventListener('click', () => { showNotification("Fitur ini akan mengimpor file JSON (bukan Word) untuk melanjutkan proyek.", 5000); importFileInput.click(); });
+            importFileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const projectData = JSON.parse(e.target.result);
+                        if (projectData.characters && projectData.state) {
+                            characters = projectData.characters || []; state = projectData.state || { ...defaultState }; storyboardData = projectData.storyboardData || [];
+                            projectTitleInput.value = state.projectTitle; scenarioInput.value = state.scenario; sceneCountInput.value = state.sceneCount; locationSetInput.value = state.locationSet;
+                            cameraStyleSetInput.value = state.cameraStyleSet; narratorVoiceSetInput.value = state.narratorVoiceSet;
+                            renderCharacters(); renderStoryboard(storyboardData); updateUIState(); showNotification("Proyek berhasil diimpor!");
+                        } else { showNotification("File proyek tidak valid."); }
+                    } catch (err) { showNotification("Gagal membaca file: " + err.message); }
+                };
+                reader.readAsText(file); importFileInput.value = '';
+            });
+        };
+        init();
+    });
+    </script>
 </body>
 </html>

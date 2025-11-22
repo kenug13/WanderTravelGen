@@ -535,7 +535,7 @@
         const importFileInput = document.getElementById('importFileInput');
         
         // --- CORE API FUNCTION ---
-        const callGeminiAPI = async (prompt, schema = null, model = 'gemini-2.5-flash-preview-05-20', imageBase64 = null, imageType = null) => {
+        const callGeminiAPI = async (prompt, schema = null, model = 'gemini-1.5-flash', imageBase64 = null, imageType = null) => {
             const apiKey = userApiKey || "";
             let apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             

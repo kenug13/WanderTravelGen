@@ -1036,7 +1036,8 @@ ${characterContext}
                 }, required: ["brand_name", "model_name", "design_language", "consistency_key"]
             };
             try {
-                const resultText = await callGeminiAPI(prompt, schema, 'gemini-2.5-flash-preview-05-20', uploadedImageBase64, uploadedImageType);
+                // Use flash-1.5 for vision capabilities as well
+                const resultText = await callGeminiAPI(prompt, schema, 'gemini-1.5-flash', uploadedImageBase64, uploadedImageType);
                 tempDevelopedChar = JSON.parse(resultText);
                 charBrandNameInput.value = tempDevelopedChar.brand_name;
                 charModelNameInput.value = tempDevelopedChar.model_name;
